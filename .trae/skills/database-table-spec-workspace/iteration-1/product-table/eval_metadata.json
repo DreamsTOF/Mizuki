@@ -1,0 +1,6 @@
+{
+  "eval_id": 1,
+  "eval_name": "product-table",
+  "prompt": "帮我创建一个商品表，需要包含商品名称、价格、库存、分类、状态等字段",
+  "assertions": []
+}

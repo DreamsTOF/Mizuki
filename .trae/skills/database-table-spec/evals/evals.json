@@ -1,0 +1,23 @@
+{
+  "skill_name": "database-table-spec",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我创建一个商品表，需要包含商品名称、价格、库存、分类、状态等字段",
+      "expected_output": "生成符合规范的完整建表语句，包含所有必备字段和必要的索引",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我需要设计一个评论表，用户可以对商品进行评论，需要记录评论内容、评分、评论时间等信息",
+      "expected_output": "生成符合规范的完整建表语句，包含用户ID和商品ID的外键字段，以及所有必备字段",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "请帮我审查这个建表语句是否符合规范：CREATE TABLE user (id INT PRIMARY KEY, name VARCHAR(50), email VARCHAR(100));",
+      "expected_output": "指出不符合规范的地方，如主键类型、缺少必备字段、缺少注释、缺少索引等，并给出改进建议",
+      "files": []
+    }
+  ]
+}
