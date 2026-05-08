@@ -1,6 +1,0 @@
-{
-  "eval_id": 3,
-  "eval_name": "review-sql",
-  "prompt": "请帮我审查这个建表语句是否符合规范：CREATE TABLE user (id INT PRIMARY KEY, name VARCHAR(50), email VARCHAR(100));",
-  "assertions": []
-}
