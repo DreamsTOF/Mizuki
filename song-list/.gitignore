@@ -1,0 +1,58 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# --- 全局忽略所有 . 开头的文件/文件夹 ---
+.*
+**/.*
+# 先排除掉全局的忽略规则对该文件夹的影响
+!.trae/
+
+# 如果你只想跟踪文件夹里的内容，确保里面没有被进一步忽略
+!.trae/**
+# --- 【重要】白名单（使用 ! 取消忽略） ---
+# 必须保留 .gitignore 自己，否则 git 将无法读取忽略规则
+!/.gitignore
+
+# 如果你使用 Maven Wrapper (根据你提供的片段，你需要保留这个)
+!/.mvn/
+
+# 如果你有 git 属性配置
+!/.gitattributes
+
+# 如果你有 CI/CD 配置 (按需保留)
+# !/.github/
+# !/.gitlab-ci.yml
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+application*.yml
+application*.yaml
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+### VS Code ###
+.vscode/
+/data/fingerprints_rocks/
+/data/rocksdb_sa_token/
+/songs-frontend/node_modules/

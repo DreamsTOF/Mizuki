@@ -1,0 +1,21 @@
+package #(packageConfig.mapperPackage);
+
+
+import org.apache.ibatis.annotations.Mapper;
+import com.mybatisflex.core.BaseMapper;
+import #(packageConfig.entityPackage).#(table.buildEntityClassName());
+
+
+/**
+ * #(table.comment) Mapper 数据库访问接口
+ * <p>
+ * 继承 BaseMapper 以获得 MyBatis-Flex 提供的基础 CRUD 能力。
+ * </p>
+ *
+ * @author #(javadocConfig.author)
+ * @since #(javadocConfig.since)
+ */
+@Mapper
+public interface #(table.buildMapperClassName()) extends BaseMapper<#(table.buildEntityClassName())> {
+
+}

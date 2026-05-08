@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 同样继承父工程，统一版本管理 -->
+    <parent>
+        <groupId>cn.dreamtof</groupId>
+        <artifactId>fans-songs</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>dreamtof-core</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <description>核心基础模块：存放全局接口、常量、异常定义与基础工具类</description>
+
+    <dependencies>
+        <!-- ========================================================== -->
+        <!-- 1. 必选基础库 (The "Must-Haves")                           -->
+        <!-- ========================================================== -->
+
+        <!-- Lombok: 消除样板代码 (@Getter, @Data 等) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.f4b6a3</groupId>
+            <artifactId>uuid-creator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <!-- Apache Commons Lang3: 这里的 Asserts 工具类强依赖它 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+
+        <!-- ========================================================== -->
+        <!-- 2. 契约与规范库 (The "Contracts")                          -->
+        <!-- ========================================================== -->
+
+        <!-- SLF4J API: 只引入接口，不引入实现 (Logback)，保证纯净 -->
+        <!-- 允许 core 层的工具类打印日志，具体实现交给引用它的上层应用 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Jackson Annotations: 仅引入注解包 -->
+        <!-- 允许在 ErrorCode 或 BaseResponse 上加 @JsonInclude 等注解，而不依赖庞大的 Jackson 核心 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>provided</scope> <!-- 建议用 provided，由启动端提供版本 -->
+        </dependency>
+        <!-- ========================================================== -->
+        <!-- 3. 可选扩展 (根据 Asserts 或 Util 需求决定)                -->
+        <!-- ========================================================== -->
+
+        <!-- Jakarta Validation API: 如果 @Check 注解想兼容 JSR-303 标准可引入 -->
+        <!-- 目前你的 @Check 是自研的，所以其实不需要这个 -->
+        <!--
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+        -->
+
+    </dependencies>
+
+</project>

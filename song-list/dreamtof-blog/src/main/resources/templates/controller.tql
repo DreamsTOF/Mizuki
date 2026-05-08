@@ -1,0 +1,135 @@
+package #(packageConfig.controllerPackage);
+
+#set(pkType = "Serializable")
+#for(column : table.columns)
+    #if(column.primaryKey)
+        #set(pkType = column.propertySimpleType)
+    #end
+#end
+
+import #(packageConfig.basePackage).api.request.#(table.buildEntityClassName())PageReq;
+import #(packageConfig.basePackage).api.request.#(table.buildEntityClassName())CursorReq;
+import cn.dreamtof.core.base.PageResult;
+import cn.dreamtof.core.base.BaseResponse;
+import cn.dreamtof.core.utils.ResultUtils;
+import cn.dreamtof.core.base.CursorResult;
+import lombok.RequiredArgsConstructor;
+import #(packageConfig.entityPackage).#(table.buildEntityClassName());
+import #(packageConfig.servicePackage).#(table.buildServiceClassName());
+import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+
+#if(pkType == "Serializable")
+import java.io.Serializable;
+#elseif(pkType == "UUID")
+import java.util.UUID;
+#elseif(pkType == "BigInteger")
+import java.math.BigInteger;
+#end
+
+/**
+ * #(table.buildControllerClassName())
+ * <p>
+ * #(table.comment) 控制器
+ * 职责：接收 HTTP 请求，执行参数解析与基础校验，调用业务服务层。
+ * </p>
+ *
+ * @author #(javadocConfig.author)
+ * @since #(javadocConfig.since)
+ */
+@Tag(name = "#(tagPrefix)/#(table.comment)")
+@RestController
+@RequestMapping("/#(urlPrefix)/#(table.buildEntityClassName().substring(0, 1).toLowerCase() + table.buildEntityClassName().substring(1))")
+@RequiredArgsConstructor
+public class #(table.buildControllerClassName()) {
+
+    private final #(table.buildServiceClassName()) appService;
+
+    /**
+     * 新增 #(table.comment)
+     *
+     * @param entity #(table.comment) 领域实体对象
+     * @return 成功返回 true
+     */
+    @PostMapping("save")
+    public BaseResponse<#(table.buildEntityClassName())> save(@RequestBody #(table.buildEntityClassName()) entity) {
+        return ResultUtils.success(appService.create(entity));
+    }
+
+    /**
+     * 根据 ID 删除 #(table.comment)
+     *
+     * @param id 主键 ID
+     * @return 成功返回 true
+     */
+    @DeleteMapping("remove/{id}")
+    public BaseResponse<Boolean> remove(@PathVariable #(pkType) id) {
+        return ResultUtils.success(appService.delete(id));
+    }
+
+    /**
+     * 批量删除 #(table.comment)
+     *
+     * @param ids 主键 ID 集合
+     * @return 成功返回 true
+     */
+    @DeleteMapping("removeByIds")
+    public BaseResponse<Boolean> removeByIds(@RequestBody List<#(pkType)> ids) {
+        return ResultUtils.success(appService.deleteBatch(ids));
+    }
+
+    /**
+     * 更新 #(table.comment)
+     *
+     * @param entity 包含更新信息的 #(table.comment) 领域实体
+     * @return 成功返回 true
+     */
+    @PutMapping("update")
+    public BaseResponse<#(table.buildEntityClassName())> update(@RequestBody #(table.buildEntityClassName()) entity) {
+        return ResultUtils.success(appService.update(entity));
+    }
+
+    /**
+     * 获取 #(table.comment) 详情
+     *
+     * @param id 主键 ID
+     * @return #(table.comment) 详情数据 (Entity)
+     */
+    @GetMapping("detail/{id}")
+    public BaseResponse<#(table.buildEntityClassName())> getInfo(@PathVariable #(pkType) id) {
+        return ResultUtils.success(appService.getDetail(id));
+    }
+
+    /**
+     * 查询 #(table.comment) 列表
+     *
+     * @return #(table.comment) 全量集合 (Entity)
+     */
+    @GetMapping("list")
+    public BaseResponse<List<#(table.buildEntityClassName())>> listAll() {
+        return ResultUtils.success(appService.listAll());
+    }
+
+    /**
+     * 分页查询 #(table.comment)
+     *
+     * @param pageRequest 分页请求（包含页码、页长）
+     * @return 分页结果 (Page<Entity>)
+     */
+    @PostMapping("page")
+  public BaseResponse<PageResult<#(table.buildEntityClassName())>> page(@RequestBody #(table.buildEntityClassName())PageReq pageRequest) {
+          return ResultUtils.success(appService.page(pageRequest));
+    }
+
+    /**
+     * 游标查询 (瀑布流)
+     *
+     * @param cursorReq 游标请求参数
+     * @return 游标结果集
+     */
+    @PostMapping("seek")
+    public BaseResponse<CursorResult<#(table.buildEntityClassName())>> seek(@RequestBody #(table.buildEntityClassName())CursorReq cursorReq) {
+        return ResultUtils.success(appService.seek(cursorReq));
+    }
+}

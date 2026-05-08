@@ -1,0 +1,39 @@
+package #(packageConfig.basePackage).application.assembler;
+
+import #(packageConfig.entityPackage).#(table.buildEntityClassName());
+import #(packageConfig.basePackage).infrastructure.persistence.po.#(table.buildEntityClassName())PO;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
+import java.util.List;
+
+/**
+ * #(table.comment) 转换器
+ * <p>
+ * 职责：实现DTO ,VO, Entity 与 PO 之间的无损映射。
+ * </p>
+ */
+@Mapper(componentModel = "spring")
+public interface #(table.buildEntityClassName())Assembler {
+
+    /**
+     * Entity 转 PO (入库)
+     */
+    #(table.buildEntityClassName())PO toPO(#(table.buildEntityClassName()) entity);
+
+    /**
+     * PO 转 Entity (出库)
+     */
+    #(table.buildEntityClassName()) toEntity(#(table.buildEntityClassName())PO po);
+
+    /**
+     * 集合转换
+     * PO 转 Entity (出库)
+     */
+    List<#(table.buildEntityClassName())> toEntityList(List<#(table.buildEntityClassName())PO> poList);
+
+    /**
+     * 集合转换
+     * Entity 转 PO (入库)
+     */
+    List<#(table.buildEntityClassName())PO> toPOList(List<#(table.buildEntityClassName())> entityList);
+}

@@ -1,0 +1,28 @@
+package #(packageConfig.entityPackage);
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+/**
+ * #(table.comment) 视图对象
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(name = "#(table.buildEntityClassName())", description = "#(table.comment)视图对象")
+public class #(table.buildEntityClassName()) implements Serializable {
+
+#for(column : table.columns)
+    /**
+     * #(column.comment)
+     */
+    @Schema(description = "#(column.comment ?? column.property)")
+    private #(column.propertySimpleType) #(column.property);
+#end
+}

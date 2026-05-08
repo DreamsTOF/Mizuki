@@ -1,0 +1,193 @@
+package #(packageConfig.serviceImplPackage);
+
+#set(pkType = "Serializable")
+#for(column : table.columns)
+    #if(column.primaryKey)
+        #set(pkType = column.propertySimpleType)
+    #end
+#end
+
+import com.mybatisflex.spring.service.impl.ServiceImpl;
+import lombok.RequiredArgsConstructor;
+import #(packageConfig.entityPackage).#(table.buildEntityClassName())PO; // PO 类
+import #(packageConfig.basePackage).domain.model.entity.#(table.buildEntityClassName());   // 领域层 Entity
+import #(packageConfig.mapperPackage).#(table.buildMapperClassName());
+import #(packageConfig.servicePackage).#(table.buildServiceClassName());
+import #(packageConfig.basePackage).application.assembler.#(table.buildEntityClassName())Assembler; // Assembler 移至此处
+import #(packageConfig.basePackage).api.request.#(table.buildEntityClassName())PageReq;
+import #(packageConfig.basePackage).api.request.#(table.buildEntityClassName())CursorReq;
+import cn.dreamtof.core.base.CursorResult;
+import org.springframework.stereotype.Repository;
+import com.mybatisflex.core.paginate.Page;
+import cn.dreamtof.core.base.PageResult;
+import com.mybatisflex.core.query.QueryWrapper;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+
+#if(pkType == "Serializable")
+import java.io.Serializable;
+#elseif(pkType == "UUID")
+import java.util.UUID;
+#elseif(pkType == "BigInteger")
+import java.math.BigInteger;
+#end
+
+/**
+ * #(table.comment) 仓储实现 (Infrastructure Layer)
+ * <p>
+ * 职责：实现领域层定义的仓储接口，直接与数据库交互。
+ * 采用显式 super 调用，确保直接触发底层框架行为，消除递归隐患。
+ * </p>
+ *
+ * @author #(javadocConfig.author)
+ * @since #(javadocConfig.since)
+ */
+@Repository
+@RequiredArgsConstructor
+@Slf4j
+public class #(table.buildServiceImplClassName()) extends ServiceImpl<#(table.buildMapperClassName()), #(table.buildEntityClassName())PO> implements #(table.buildServiceClassName()) {
+
+    private final #(table.buildEntityClassName())Assembler assembler; // 注入 MapStruct 转换器
+
+    // ================== 1. 基础透传操作 (使用 super) ==================
+
+   @Override
+   public #(table.buildEntityClassName()) create(#(table.buildEntityClassName()) entity) {
+       // Entity -> PO
+       #(table.buildEntityClassName())PO po = assembler.toPO(entity);
+       // MyBatis-Flex 的 super.save(po) 返回 boolean
+       if (super.save(po)) {
+           // 执行成功后，Flex 会自动回填主键 ID 到 po 对象中
+           return assembler.toEntity(po);
+       }
+       return null;
+   }
+
+    @Override
+    public boolean removeById(#(pkType) id) {
+        return super.removeById(id);
+    }
+
+    @Override
+    public #(table.buildEntityClassName()) update(#(table.buildEntityClassName()) entity) {
+        // Entity -> PO
+        #(table.buildEntityClassName())PO po = assembler.toPO(entity);
+        // MyBatis-Flex 的 super.updateById(po) 返回 boolean
+        if (super.updateById(po)) {
+            return assembler.toEntity(po);
+        }
+        return null;
+    }
+
+    @Override
+    public #(table.buildEntityClassName()) getById(#(pkType) id) {
+        #(table.buildEntityClassName())PO po = super.getById(id);
+        // PO -> Entity
+        return assembler.toEntity(po);
+    }
+
+    @Override
+    public List<#(table.buildEntityClassName())> listAll() {
+        // 查出 PO 列表
+        List<#(table.buildEntityClassName())PO> poList = super.list();
+        // PO List -> Entity List
+        return assembler.toEntityList(poList);
+    }
+
+  /**
+   * 分页查询实现
+   */
+  @Override
+  public PageResult<#(table.buildEntityClassName())> page(#(table.buildEntityClassName())PageReq pageReq) {
+      // 1. 初始化 MyBatis-Flex 的 Page 对象
+      Page<#(table.buildEntityClassName())PO> flexPage = Page.of(
+          pageReq.getPageNum(),
+          pageReq.getPageSize()
+      );
+      // 2. 构造查询条件对象 (QueryWrapper)
+      // 此时可根据业务需求，将 pageReq 中的过滤字段映射为数据库查询条件
+      QueryWrapper queryWrapper = QueryWrapper.create();
+
+      // 此处可以根据需求扩展过滤条件，例如：
+      // if (pageReq.getSomeField() != null) {
+      //     queryWrapper.where(TABLE_NAME_PO.SOME_FIELD.eq(pageReq.getSomeField()));
+      // }
+
+      // 3. 执行持久层分页查询
+      Page<#(table.buildEntityClassName())PO> resultPage = super.page(flexPage, queryWrapper);
+
+      // 4. 数据层级转换 (PO -> Entity)
+      List<#(table.buildEntityClassName())> entityList = assembler.toEntityList(resultPage.getRecords());
+
+      // 5. 组装并返回通用的 PageResult 对象
+      return PageResult.of(
+          entityList,
+          resultPage.getTotalRow(),
+          resultPage.getTotalPage(),
+          resultPage.getPageNumber(),
+          resultPage.getPageSize()
+      );
+  }
+
+    // ================== 2. 增强逻辑实现 ==================
+
+    @Override
+    public Boolean removeByIds(List<#(pkType)> ids) {
+        // 调用 ServiceImpl 内置的批量按 ID 删除
+        return super.removeByIds(ids);
+    }
+
+    @Override
+    public boolean saveBatch(List<#(table.buildEntityClassName())> entities) {
+        // Entity List -> PO List
+        List<#(table.buildEntityClassName())PO> pos = assembler.toPOList(entities);
+        // 调用 ServiceImpl 内置的批量保存，默认 1000 条一提交
+        return super.saveBatch(pos);
+    }
+
+    @Override
+    public boolean existsById(#(pkType) id) {
+        // 利用 Flex 的 queryChain 快速判断，不涉及对象实例化，性能极佳
+        return queryChain().where(#(table.buildEntityClassName())PO::getId).eq(id).exists();
+    }
+
+    @Override
+    public List<#(table.buildEntityClassName())> listByIds(List<#(pkType)> ids) {
+        List<#(table.buildEntityClassName())PO> poList = super.listByIds(ids);
+        return assembler.toEntityList(poList);
+    }
+
+    @Override
+    public CursorResult<#(table.buildEntityClassName())> seek(#(table.buildEntityClassName())CursorReq req) {
+        // 1. 类型安全转换：将 Serializable 游标转为具体的 #(pkType)
+        #(pkType) lastId = null;
+        if (req.getCursor() != null) {
+            lastId = (#(pkType)) req.getCursor();
+        }
+
+        // 2. 执行持久层查询 (多查 1 条用于判断 hasNext)
+        List<#(table.buildEntityClassName())PO> poList = queryChain()
+                // 使用 gt (大于) 实现游标跳转，主键必须有序
+                .where(#(table.buildEntityClassName())PO::getId).gt(lastId)
+                .orderBy(#(table.buildEntityClassName())PO::getId).asc()
+                .limit(req.getLimit() + 1)
+                .list();
+
+        // 3. 判断是否有下一页并截取数据
+        boolean hasNext = poList.size() > req.getLimit();
+        List<#(table.buildEntityClassName())PO> resultList = hasNext ? poList.subList(0, req.getLimit()) : poList;
+
+        // 4. 计算下一个游标值
+        #(pkType) nextCursor = null;
+        if (!resultList.isEmpty()) {
+            nextCursor = resultList.get(resultList.size() - 1).getId();
+        }
+
+        // 5. 转换并返回
+        return new CursorResult<>(
+            assembler.toEntityList(resultList),
+            nextCursor,
+            hasNext
+        );
+    }
+}

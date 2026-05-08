@@ -1,0 +1,128 @@
+package #(packageConfig.servicePackage);
+
+#set(pkType = "Serializable")
+#for(column : table.columns)
+    #if(column.primaryKey)
+        #set(pkType = column.propertySimpleType)
+    #end
+#end
+
+import com.mybatisflex.core.paginate.Page;
+import cn.dreamtof.core.base.PageResult;
+import #(packageConfig.basePackage).domain.model.entity.#(table.buildEntityClassName());   // 领域层 Entity
+import #(packageConfig.basePackage).api.request.#(table.buildEntityClassName())PageReq;
+import #(packageConfig.basePackage).api.request.#(table.buildEntityClassName())CursorReq;
+import cn.dreamtof.core.base.CursorResult;
+import java.util.List;
+
+#if(pkType == "Serializable")
+import java.io.Serializable;
+#elseif(pkType == "UUID")
+import java.util.UUID;
+#elseif(pkType == "BigInteger")
+import java.math.BigInteger;
+#end
+
+/**
+ * #(table.comment) 仓储接口 (Domain Layer)
+ * <p>
+ * 职责：定义领域层所需的持久化契约。
+ * 屏蔽底层框架 (MyBatis-Flex) 细节，仅操作领域实体。
+ * </p>
+ *
+ * @author #(javadocConfig.author)
+ * @since #(javadocConfig.since)
+ */
+public interface #(table.buildServiceClassName()) {
+
+    // ================== 1. 基础具名操作 ==================
+
+    /**
+     * 保存实体
+     *
+     * @param entity 领域对象
+     * @return 包含 ID 的领域对象
+     */
+    #(table.buildEntityClassName()) create(#(table.buildEntityClassName()) entity);
+
+    /**
+     * 根据 ID 删除
+     *
+     * @param id 主键
+     * @return true 成功
+     */
+    boolean removeById(#(pkType) id);
+
+    /**
+     * 根据 ID 更新
+     *
+     * @param entity 包含 ID 的领域对象
+     * @return 更新后的领域对象
+     */
+    #(table.buildEntityClassName()) update(#(table.buildEntityClassName()) entity);
+
+    /**
+     * 根据 ID 获取详情
+     *
+     * @param id 主键
+     * @return 领域对象
+     */
+    #(table.buildEntityClassName()) getById(#(pkType) id);
+
+    /**
+     * 获取全量列表
+     *
+     * @return 领域实体集合
+     */
+    List<#(table.buildEntityClassName())> listAll();
+
+    /**
+     * 分页查询 (增强版)
+     *
+     * @param pageReq 分页请求参数
+     * @return 领域实体分页结果
+     */
+    PageResult<#(table.buildEntityClassName())> page(#(table.buildEntityClassName())PageReq pageReq);
+
+    // ================== 2. 增强扩展操作 ==================
+
+    /**
+     * 批量删除
+     *
+     * @param ids ID 集合
+     * @return true 执行成功
+     */
+    Boolean removeByIds(List<#(pkType)> ids);
+
+    /**
+     * 批量保存
+     *
+     * @param entities 领域实体集合
+     * @return true 全部成功
+     */
+    boolean saveBatch(List<#(table.buildEntityClassName())> entities);
+
+    /**
+     * 检查是否存在
+     *
+     * @param id 主键
+     * @return true 存在
+     */
+    boolean existsById(#(pkType) id);
+
+    /**
+     * 根据 ID 集合批量获取
+     *
+     * @param ids ID 集合
+     * @return 领域实体列表
+     */
+    List<#(table.buildEntityClassName())> listByIds(List<#(pkType)> ids);
+
+    /**
+     * 游标查询 (Seek Method / 瀑布流)
+     *
+     * @param req 游标查询请求
+     * @return 分页结果包装类
+     */
+    CursorResult<#(table.buildEntityClassName())> seek(#(table.buildEntityClassName())CursorReq req);
+}
