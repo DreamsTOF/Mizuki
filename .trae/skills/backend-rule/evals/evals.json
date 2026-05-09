@@ -1,0 +1,23 @@
+{
+  "skill_name": "backend-rule",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我创建一个歌曲模块的 CRUD 接口",
+      "expected_output": "使用 TransactionTemplate 管理事务，使用 Asserts 进行异常校验，使用 ResultUtils 返回响应",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "帮我编写一个创建订单的方法，需要校验用户和库存",
+      "expected_output": "使用 TransactionTemplate 管理事务，使用 Asserts 校验业务规则，禁止连表查询",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "帮我编写一个分页查询用户的方法",
+      "expected_output": "逐步构造 QueryWrapper，单表查询不开启事务",
+      "files": []
+    }
+  ]
+}

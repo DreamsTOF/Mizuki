@@ -1,0 +1,35 @@
+{
+  "skill_name": "dreamtof-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我有一个 SongAppService 的 createSong 方法，内部调用了 songRepository.insert(song)，请问这个方法需要添加审计注解吗？如果需要，应该怎么加？",
+      "expected_output": "需要。因为调用了 insert 写操作。在方法上添加 @AuditLog(entity = SongPO.class)。同时检查方法参数 DTO，为 ID 字段添加 @AuditEntityId，为外键字段添加 @AuditReference。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "setSongLabels 方法中同时操作了 SongLabelMapPO（delete + insert）和 SongPO（update），@AuditLog 注解应该怎么写？",
+      "expected_output": "使用多实体注解：@AuditLog(entities = {SongLabelMapPO.class, SongPO.class})。注意 SongLabelMapPO 虽然操作了两次（delete + insert），但实体类只列一次。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "批量导入 10000 首歌曲时，使用 FlexUltraInserter.execute()，@AuditLog 注解需要特殊配置吗？",
+      "expected_output": "需要添加 partial = AuditOption.TRUE 参数以启用简略模式，节省内存。示例：@AuditLog(entity = SongPO.class, partial = AuditOption.TRUE)。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "如何从 repository 变量名推断实体类？比如 labelRepository 对应哪个 PO？",
+      "expected_output": "去掉 Repository 后缀，加上 PO.class。labelRepository → Label → SongLabelPO（根据项目命名习惯）。一般规则：songRepository→SongPO，userRepository→UserPO，mapRepository→SongLabelMapPO。",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "只读查询方法（如 getSongById）需要添加 @AuditLog 吗？为什么？",
+      "expected_output": "不需要。审计只针对写操作（insert/update/delete）。只读查询（select/selectList/count）不产生数据变更，不需要审计。",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "disabledSkills": [
+    "exception-handling",
+    "operation-context",
+    "smart-query",
+    "audit-logging",
+    "api-response-standards",
+    "mybatis-flex-patterns",
+    "ddd-architecture",
+    "ui-ux-pro-max",
+    "dreamtof-backend",
+    "dreamtof-query",
+    "dreamtof-audit",
+    "performance-troubleshooting",
+    "audit-helper",
+    "pm-ux",
+    "pmaster",
+    "frontend-rule",
+    "pm-research",
+    "database-table-spec",
+    "brainstorming",
+    "frontend-design",
+    "next-cache-components",
+    "webapp-testing",
+    "pm-prioritization",
+    "pm-prd",
+    "skill-creator",
+    "pm-execution",
+    "backend-rule",
+    "git-workflows"
+  ]
+}

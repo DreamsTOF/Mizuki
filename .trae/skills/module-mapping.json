@@ -1,0 +1,22 @@
+{
+  "user": "用户管理",
+  "order": "订单管理",
+  "product": "商品管理",
+  "payment": "支付管理",
+  "inventory": "库存管理",
+  "song": "歌曲管理",
+  "label": "标签管理",
+  "category": "分类管理",
+  "artist": "歌手管理",
+  "album": "专辑管理",
+  "playlist": "歌单管理",
+  "comment": "评论管理",
+  "favorite": "收藏管理",
+  "follow": "关注管理",
+  "message": "消息管理",
+  "notification": "通知管理",
+  "report": "报表管理",
+  "setting": "设置管理",
+  "config": "配置管理",
+  "log": "日志管理"
+}

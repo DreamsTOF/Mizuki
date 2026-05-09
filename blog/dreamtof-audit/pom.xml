@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>cn.dreamtof</groupId>
+        <artifactId>blog</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>dreamtof-audit</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <description>智能审计模块 - 包含 AOP 切面、数据库存储与 Excel 导出</description>
+
+    <dependencies>
+        <!-- ========================================================== -->
+        <!-- 1. 基础架构依赖 (Infrastructure)                            -->
+        <!-- ========================================================== -->
+
+        <!-- 引入日志模块：为了实现监听器，接收日志流 -->
+        <dependency>
+            <groupId>cn.dreamtof</groupId>
+            <artifactId>dreamtof-log</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- 引入核心模块：获取上下文用户身份 -->
+        <dependency>
+            <groupId>cn.dreamtof</groupId>
+            <artifactId>dreamtof-core</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <!-- ========================================================== -->
+        <!-- 2. Spring 业务环境 (Business Env)                           -->
+        <!-- ========================================================== -->
+
+        <!-- AOP: 拦截 @AuditLog 注解 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- Web: 解析 HTTP 请求上下文 (IP, UA) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 事务: 审计入库需要事务支持 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+
+        <!-- ========================================================== -->
+        <!-- 3. 核心业务功能库 (Heavy Business Libs)                     -->
+        <!-- ========================================================== -->
+
+        <!-- [数据库] MyBatis-Flex: 审计日志持久化 -->
+        <dependency>
+            <groupId>com.mybatis-flex</groupId>
+            <artifactId>mybatis-flex-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- [报表] EasyExcel: 审计日志导出给外行看 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+        </dependency>
+
+        <!-- [文档] Swagger: 审计接口文档 (你特别要求的) -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
+
+        <!-- [网络] OkHttp: 可能需要将审计日志推送到第三方监管平台 -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+        </dependency>
+
+        <!-- [缓存] Caffeine: 缓存审计策略或黑名单 -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <!-- ========================================================== -->
+        <!-- 4. 工具库全家桶 (Utilities)                                 -->
+        <!-- ========================================================== -->
+
+        <!-- JSON 处理 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- Lombok 编译辅助 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- 对象映射 (DTO -> Entity) -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+
+        <!-- Commons 全家桶 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+
+        <!-- Guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.javers</groupId>
+            <artifactId>javers-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+    </dependencies>
+</project>
