@@ -1,96 +1,51 @@
 package cn.dreamtof.portfolio.domain.model.entity;
 
-import cn.dreamtof.core.base.CreateTimeAudit;
-import cn.dreamtof.core.base.UpdateTimeAudit;
-import cn.dreamtof.core.base.VersionAudit;
-
-import java.util.UUID;
-import java.io.Serializable;
-import java.io.Serial;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.math.BigDecimal;
+import cn.dreamtof.core.exception.Asserts;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.extern.slf4j.Slf4j;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
-
-
-/**
- * 时间线链接关联表 领域实体
- * <p>
- * 职责：核心业务逻辑、领域行为校验、审计数据持有。
- * </p>
- *
- * @author dream
- * @since 
- */
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Slf4j
-@Schema(name="TimelineEventLinks", description = "时间线链接关联表 领域实体")
-public class TimelineEventLinks implements Serializable, IdAudit{
+@Schema(name = "TimelineEventLinks", description = "时间线链接关联表 领域实体")
+public class TimelineEventLinks implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /**
-     * ID
-     */
-     @Schema(description = "ID")
-     private UUID id;
-    /**
-     * 关联的事件 ID，对应 timeline_events.id
-     */
-     @Schema(description = "关联的事件 ID，对应 timeline_events.id")
-     private UUID timelineEventId;
-    /**
-     * 链接名称
-     */
-     @Schema(description = "链接名称")
-     private String name;
-    /**
-     * 链接地址
-     */
-     @Schema(description = "链接地址")
-     private String url;
-    /**
-     * 链接类型
-     */
-     @Schema(description = "链接类型")
-     private String linkType;
-    /**
-     * 乐观锁版本号
-     */
-     @Schema(description = "乐观锁版本号")
-     private Integer version;
-    /**
-     * 关联创建时间
-     */
-     @Schema(description = "关联创建时间")
-     private OffsetDateTime createdAt;
+    @Schema(description = "ID")
+    private UUID id;
+    @Schema(description = "关联的事件 ID")
+    private UUID timelineEventId;
+    @Schema(description = "链接名称")
+    private String name;
+    @Schema(description = "链接地址")
+    private String url;
+    @Schema(description = "链接类型")
+    private String linkType;
+    @Schema(description = "乐观锁版本号")
+    private Integer version;
+    @Schema(description = "关联创建时间")
+    private OffsetDateTime createdAt;
 
-    // ==========================================
-    // 🚀 领域行为 (Domain Logic)
-    // ==========================================
-
-    /**
-     * 初始化业务逻辑
-     */
-    public void init() {
-        // 在此处编写创建时的默认值或初始校验逻辑
-    }
-
-    /**
-     * 业务校验：示例（如权限判断）
-     */
-    public boolean canBeManagedBy(Object userId) {
-        // 利用实体已有的审计字段进行逻辑判断
-        return true;
+    public static TimelineEventLinks create(UUID timelineEventId, String name,
+                                            String url, String linkType) {
+        Asserts.notNull(timelineEventId, "事件ID不能为空");
+        Asserts.notBlank(url, "链接地址不能为空");
+        TimelineEventLinks entity = new TimelineEventLinks();
+        entity.timelineEventId = timelineEventId;
+        entity.name = name;
+        entity.url = url;
+        entity.linkType = linkType;
+        return entity;
     }
 }

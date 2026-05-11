@@ -1,9 +1,5 @@
 package cn.dreamtof.system.domain.model.entity;
 
-import cn.dreamtof.core.base.CreateTimeAudit;
-import cn.dreamtof.core.base.UpdateTimeAudit;
-import cn.dreamtof.core.base.VersionAudit;
-
 import java.util.UUID;
 import java.io.Serializable;
 import java.io.Serial;
@@ -34,7 +30,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @Slf4j
 @Schema(name="DailyStats", description = "每日统计汇总表 领域实体")
-public class DailyStats implements Serializable, IdAudit{
+public class DailyStats implements Serializable{
 
     @Serial
     private static final long serialVersionUID = 1L;

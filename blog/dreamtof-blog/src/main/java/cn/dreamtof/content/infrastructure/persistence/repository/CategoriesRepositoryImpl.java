@@ -1,55 +1,41 @@
 package cn.dreamtof.content.infrastructure.persistence.repository;
 
-
+import cn.dreamtof.content.application.assembler.CategoriesAssembler;
+import cn.dreamtof.content.domain.model.entity.Categories;
+import cn.dreamtof.content.domain.repository.CategoriesRepository;
+import cn.dreamtof.content.infrastructure.persistence.mapper.CategoriesMapper;
+import cn.dreamtof.content.infrastructure.persistence.po.CategoriesPO;
+import cn.dreamtof.content.infrastructure.persistence.po.table.CategoriesTableDef;
+import cn.dreamtof.core.base.CursorResult;
+import cn.dreamtof.core.base.PageReq;
+import cn.dreamtof.core.base.PageResult;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
-import cn.dreamtof.blog.content.infrastructure.persistence.po.CategoriesPO; // PO 类
-import cn.dreamtof.blog.content.domain.model.entity.Categories;   // 领域层 Entity
-import cn.dreamtof.blog.content.infrastructure.persistence.mapper.CategoriesMapper;
-import cn.dreamtof.blog.content.domain.repository.CategoriesRepository;
-import cn.dreamtof.blog.content.application.assembler.CategoriesAssembler; // Assembler 移至此处
-import cn.dreamtof.blog.content.api.request.CategoriesPageReq;
-import cn.dreamtof.blog.content.api.request.CategoriesCursorReq;
-import cn.dreamtof.core.base.CursorResult;
-import org.springframework.stereotype.Repository;
-import com.mybatisflex.core.paginate.Page;
-import cn.dreamtof.core.base.PageResult;
-import com.mybatisflex.core.query.QueryWrapper;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
-/**
- * 文章分类表 仓储实现 (Infrastructure Layer)
- * <p>
- * 职责：实现领域层定义的仓储接口，直接与数据库交互。
- * 采用显式 super 调用，确保直接触发底层框架行为，消除递归隐患。
- * </p>
- *
- * @author dream
- * @since 2026-05-08
- */
 @Repository
 @RequiredArgsConstructor
 @Slf4j
 public class CategoriesRepositoryImpl extends ServiceImpl<CategoriesMapper, CategoriesPO> implements CategoriesRepository {
 
-    private final CategoriesAssembler assembler; // 注入 MapStruct 转换器
+    private final CategoriesAssembler assembler;
 
-    // ================== 1. 基础透传操作 (使用 super) ==================
+    private static final CategoriesTableDef T = CategoriesTableDef.CATEGORIES_PO;
 
-   @Override
-   public Categories create(Categories entity) {
-       // Entity -> PO
-       CategoriesPO po = assembler.toPO(entity);
-       // MyBatis-Flex 的 super.save(po) 返回 boolean
-       if (super.save(po)) {
-           // 执行成功后，Flex 会自动回填主键 ID 到 po 对象中
-           return assembler.toEntity(po);
-       }
-       return null;
-   }
+    @Override
+    public Categories create(Categories entity) {
+        CategoriesPO po = assembler.toPO(entity);
+        if (super.save(po)) {
+            return assembler.toEntity(po);
+        }
+        return null;
+    }
 
     @Override
     public boolean removeById(UUID id) {
@@ -58,9 +44,7 @@ public class CategoriesRepositoryImpl extends ServiceImpl<CategoriesMapper, Cate
 
     @Override
     public Categories update(Categories entity) {
-        // Entity -> PO
         CategoriesPO po = assembler.toPO(entity);
-        // MyBatis-Flex 的 super.updateById(po) 返回 boolean
         if (super.updateById(po)) {
             return assembler.toEntity(po);
         }
@@ -70,73 +54,41 @@ public class CategoriesRepositoryImpl extends ServiceImpl<CategoriesMapper, Cate
     @Override
     public Categories getById(UUID id) {
         CategoriesPO po = super.getById(id);
-        // PO -> Entity
         return assembler.toEntity(po);
     }
 
     @Override
     public List<Categories> listAll() {
-        // 查出 PO 列表
         List<CategoriesPO> poList = super.list();
-        // PO List -> Entity List
         return assembler.toEntityList(poList);
     }
 
-  /**
-   * 分页查询实现
-   */
-  @Override
-  public PageResult<Categories> page(CategoriesPageReq pageReq) {
-      // 1. 初始化 MyBatis-Flex 的 Page 对象
-      Page<CategoriesPO> flexPage = Page.of(
-          pageReq.getPageNum(),
-          pageReq.getPageSize()
-      );
-      // 2. 构造查询条件对象 (QueryWrapper)
-      // 此时可根据业务需求，将 pageReq 中的过滤字段映射为数据库查询条件
-      QueryWrapper queryWrapper = QueryWrapper.create();
-
-      // 此处可以根据需求扩展过滤条件，例如：
-      // if (pageReq.getSomeField() != null) {
-      //     queryWrapper.where(TABLE_NAME_PO.SOME_FIELD.eq(pageReq.getSomeField()));
-      // }
-
-      // 3. 执行持久层分页查询
-      Page<CategoriesPO> resultPage = super.page(flexPage, queryWrapper);
-
-      // 4. 数据层级转换 (PO -> Entity)
-      List<Categories> entityList = assembler.toEntityList(resultPage.getRecords());
-
-      // 5. 组装并返回通用的 PageResult 对象
-      return PageResult.of(
-          entityList,
-          resultPage.getTotalRow(),
-          resultPage.getTotalPage(),
-          resultPage.getPageNumber(),
-          resultPage.getPageSize()
-      );
-  }
-
-    // ================== 2. 增强逻辑实现 ==================
+    @Override
+    public PageResult<Categories> page(PageReq pageReq) {
+        Page<CategoriesPO> flexPage = Page.of(pageReq.getPageNum(), pageReq.getPageSize());
+        QueryWrapper qw = QueryWrapper.create();
+        qw.orderBy(T.SORT_ORDER.asc());
+        Page<CategoriesPO> resultPage = super.page(flexPage, qw);
+        List<Categories> entityList = assembler.toEntityList(resultPage.getRecords());
+        return PageResult.of(entityList, resultPage.getTotalRow(), resultPage.getTotalPage(), resultPage.getPageNumber(), resultPage.getPageSize());
+    }
 
     @Override
     public Boolean removeByIds(List<UUID> ids) {
-        // 调用 ServiceImpl 内置的批量按 ID 删除
         return super.removeByIds(ids);
     }
 
     @Override
     public boolean saveBatch(List<Categories> entities) {
-        // Entity List -> PO List
         List<CategoriesPO> pos = assembler.toPOList(entities);
-        // 调用 ServiceImpl 内置的批量保存，默认 1000 条一提交
         return super.saveBatch(pos);
     }
 
     @Override
     public boolean existsById(UUID id) {
-        // 利用 Flex 的 queryChain 快速判断，不涉及对象实例化，性能极佳
-        return queryChain().where(CategoriesPO::getId).eq(id).exists();
+        QueryWrapper qw = QueryWrapper.create();
+        qw.where(T.ID.eq(id));
+        return super.count(qw) > 0;
     }
 
     @Override
@@ -146,36 +98,47 @@ public class CategoriesRepositoryImpl extends ServiceImpl<CategoriesMapper, Cate
     }
 
     @Override
-    public CursorResult<Categories> seek(CategoriesCursorReq req) {
-        // 1. 类型安全转换：将 Serializable 游标转为具体的 UUID
-        UUID lastId = null;
-        if (req.getCursor() != null) {
-            lastId = (UUID) req.getCursor();
+    public CursorResult<Categories> seek(UUID cursor, int limit) {
+        QueryWrapper qw = QueryWrapper.create();
+        if (cursor != null) {
+            qw.where(T.ID.gt(cursor));
         }
-
-        // 2. 执行持久层查询 (多查 1 条用于判断 hasNext)
-        List<CategoriesPO> poList = queryChain()
-                // 使用 gt (大于) 实现游标跳转，主键必须有序
-                .where(CategoriesPO::getId).gt(lastId)
-                .orderBy(CategoriesPO::getId).asc()
-                .limit(req.getLimit() + 1)
-                .list();
-
-        // 3. 判断是否有下一页并截取数据
-        boolean hasNext = poList.size() > req.getLimit();
-        List<CategoriesPO> resultList = hasNext ? poList.subList(0, req.getLimit()) : poList;
-
-        // 4. 计算下一个游标值
+        qw.orderBy(T.ID.asc());
+        qw.limit(limit + 1);
+        List<CategoriesPO> poList = super.list(qw);
+        boolean hasNext = poList.size() > limit;
+        List<CategoriesPO> resultList = hasNext ? poList.subList(0, limit) : poList;
         UUID nextCursor = null;
         if (!resultList.isEmpty()) {
             nextCursor = resultList.get(resultList.size() - 1).getId();
         }
+        return new CursorResult<>(assembler.toEntityList(resultList), nextCursor, hasNext);
+    }
 
-        // 5. 转换并返回
-        return new CursorResult<>(
-            assembler.toEntityList(resultList),
-            nextCursor,
-            hasNext
-        );
+    @Override
+    public Categories findBySlug(String slug) {
+        QueryWrapper qw = QueryWrapper.create();
+        qw.where(T.SLUG.eq(slug));
+        qw.limit(1);
+        CategoriesPO po = super.getOne(qw);
+        return assembler.toEntity(po);
+    }
+
+    @Override
+    public List<Categories> listByParentId(UUID parentId) {
+        QueryWrapper qw = QueryWrapper.create();
+        qw.where(T.PARENT_ID.eq(parentId));
+        qw.orderBy(T.SORT_ORDER.asc());
+        List<CategoriesPO> poList = super.list(qw);
+        return assembler.toEntityList(poList);
+    }
+
+    @Override
+    public List<Categories> listEnabled() {
+        QueryWrapper qw = QueryWrapper.create();
+        qw.where(T.HAS_ENABLED.eq(true));
+        qw.orderBy(T.SORT_ORDER.asc());
+        List<CategoriesPO> poList = super.list(qw);
+        return assembler.toEntityList(poList);
     }
 }

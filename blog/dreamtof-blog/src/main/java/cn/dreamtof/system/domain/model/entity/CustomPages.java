@@ -1,121 +1,106 @@
 package cn.dreamtof.system.domain.model.entity;
 
-import cn.dreamtof.core.base.CreateTimeAudit;
-import cn.dreamtof.core.base.UpdateTimeAudit;
-import cn.dreamtof.core.base.VersionAudit;
-
-import java.util.UUID;
-import java.io.Serializable;
-import java.io.Serial;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.math.BigDecimal;
+import cn.dreamtof.core.exception.Asserts;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.extern.slf4j.Slf4j;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
-
-
-/**
- * 自定义页面表 领域实体
- * <p>
- * 职责：核心业务逻辑、领域行为校验、审计数据持有。
- * </p>
- *
- * @author dream
- * @since 
- */
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Slf4j
-@Schema(name="CustomPages", description = "自定义页面表 领域实体")
-public class CustomPages implements Serializable, IdAudit{
+@Schema(name = "CustomPages", description = "自定义页面表 领域实体")
+public class CustomPages implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /**
-     * ID
-     */
-     @Schema(description = "ID")
-     private UUID id;
-    /**
-     * 页面唯一标识
-     */
-     @Schema(description = "页面唯一标识")
-     private String pageKey;
-    /**
-     * 页面标题
-     */
-     @Schema(description = "页面标题")
-     private String title;
-    /**
-     * 页面内容
-     */
-     @Schema(description = "页面内容")
-     private String content;
-    /**
-     * 页面描述
-     */
-     @Schema(description = "页面描述")
-     private String description;
-    /**
-     * 封面图片
-     */
-     @Schema(description = "封面图片")
-     private String coverImage;
-    /**
-     * 是否允许评论
-     */
-     @Schema(description = "是否允许评论")
-     private Boolean hasCommentEnabled;
-    /**
-     * 是否启用
-     */
-     @Schema(description = "是否启用")
-     private Boolean hasEnabled;
-    /**
-     * 乐观锁版本号
-     */
-     @Schema(description = "乐观锁版本号")
-     private Integer version;
-    /**
-     * 创建时间
-     */
-     @Schema(description = "创建时间")
-     private OffsetDateTime createdAt;
-    /**
-     * 最后更新时间
-     */
-     @Schema(description = "最后更新时间")
-     private OffsetDateTime updatedAt;
-    /**
-     * 软删除时间戳
-     */
-     @Schema(description = "软删除时间戳")
-     private OffsetDateTime deletedAt;
+    @Schema(description = "ID")
+    private UUID id;
 
-    // ==========================================
-    // 🚀 领域行为 (Domain Logic)
-    // ==========================================
+    @Schema(description = "页面唯一标识")
+    private String pageKey;
 
-    /**
-     * 初始化业务逻辑
-     */
-    public void init() {
-        // 在此处编写创建时的默认值或初始校验逻辑
+    @Schema(description = "页面标题")
+    private String title;
+
+    @Schema(description = "页面内容")
+    private String content;
+
+    @Schema(description = "页面描述")
+    private String description;
+
+    @Schema(description = "封面图片")
+    private String coverImage;
+
+    @Schema(description = "是否允许评论")
+    private Boolean hasCommentEnabled;
+
+    @Schema(description = "是否启用")
+    private Boolean hasEnabled;
+
+    @Schema(description = "乐观锁版本号")
+    private Integer version;
+
+    @Schema(description = "创建时间")
+    private OffsetDateTime createdAt;
+
+    @Schema(description = "最后更新时间")
+    private OffsetDateTime updatedAt;
+
+    @Schema(description = "软删除时间戳")
+    private OffsetDateTime deletedAt;
+
+    public static CustomPages create(String pageKey, String title, String content,
+                                     String description, String coverImage,
+                                     Boolean hasCommentEnabled, Boolean hasEnabled) {
+        Asserts.notBlank(pageKey, "页面唯一标识不能为空");
+        Asserts.notBlank(title, "页面标题不能为空");
+        CustomPages entity = new CustomPages();
+        entity.pageKey = pageKey;
+        entity.title = title;
+        entity.content = content;
+        entity.description = description;
+        entity.coverImage = coverImage;
+        entity.hasCommentEnabled = hasCommentEnabled != null ? hasCommentEnabled : false;
+        entity.hasEnabled = hasEnabled != null ? hasEnabled : true;
+        return entity;
     }
 
-    /**
-     * 业务校验：示例（如权限判断）
-     */
-    public boolean canBeManagedBy(Object userId) {
-        // 利用实体已有的审计字段进行逻辑判断
-        return true;
+    public void updateContent(String title, String content, String description,
+                              String coverImage, Boolean hasCommentEnabled, Boolean hasEnabled) {
+        if (title != null) {
+            this.title = title;
+        }
+        if (content != null) {
+            this.content = content;
+        }
+        if (description != null) {
+            this.description = description;
+        }
+        if (coverImage != null) {
+            this.coverImage = coverImage;
+        }
+        if (hasCommentEnabled != null) {
+            this.hasCommentEnabled = hasCommentEnabled;
+        }
+        if (hasEnabled != null) {
+            this.hasEnabled = hasEnabled;
+        }
+    }
+
+    public void enable() {
+        this.hasEnabled = true;
+    }
+
+    public void disable() {
+        this.hasEnabled = false;
     }
 }

@@ -1,16 +1,38 @@
 package cn.dreamtof.system.domain.repository;
 
+import cn.dreamtof.core.base.CursorResult;
 import cn.dreamtof.core.base.PageReq;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import cn.dreamtof.core.base.PageResult;
+import cn.dreamtof.system.domain.model.entity.PageViews;
 
-/**
- * 页面访问统计表 分页查询请求
- */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@Schema(name = "PageViewsPageReq", description = "页面访问统计表分页查询请求")
-public class PageViewsPageReq extends PageReq {
-    // 可以在此根据 table.columns 生成特定的过滤字段，如 name, status 等
+import java.util.List;
+import java.util.UUID;
+
+public interface PageViewsRepository {
+
+    PageViews create(PageViews entity);
+
+    boolean removeById(UUID id);
+
+    PageViews update(PageViews entity);
+
+    PageViews getById(UUID id);
+
+    List<PageViews> listAll();
+
+    PageResult<PageViews> page(PageReq pageReq);
+
+    Boolean removeByIds(List<UUID> ids);
+
+    boolean saveBatch(List<PageViews> entities);
+
+    boolean existsById(UUID id);
+
+    List<PageViews> listByIds(List<UUID> ids);
+
+    CursorResult<PageViews> seek(UUID cursor, int limit);
+
+    long countByPagePath(String pagePath);
+
+    List<PageViews> listTopPages(int limit);
 }

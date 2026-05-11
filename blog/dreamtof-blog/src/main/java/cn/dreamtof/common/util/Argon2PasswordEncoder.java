@@ -1,4 +1,4 @@
-package cn.dreamtof.auth.infrastructure.security;
+package cn.dreamtof.common.util;
 
 import org.springframework.stereotype.Component;
 import de.mkammerer.argon2.Argon2;

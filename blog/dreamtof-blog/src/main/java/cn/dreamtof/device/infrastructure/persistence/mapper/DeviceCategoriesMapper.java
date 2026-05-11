@@ -3,7 +3,7 @@ package cn.dreamtof.device.infrastructure.persistence.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import com.mybatisflex.core.BaseMapper;
-import cn.dreamtof.blog.device.infrastructure.persistence.po.DeviceCategoriesPO;
+import cn.dreamtof.device.infrastructure.persistence.po.DeviceCategoriesPO;
 
 
 /**
@@ -12,8 +12,8 @@ import cn.dreamtof.blog.device.infrastructure.persistence.po.DeviceCategoriesPO;
  * 继承 BaseMapper 以获得 MyBatis-Flex 提供的基础 CRUD 能力。
  * </p>
  *
- * @author dream
- * @since 2026-05-08
+ * @author lyl
+ * @since 2026-05-09
  */
 @Mapper
 public interface DeviceCategoriesMapper extends BaseMapper<DeviceCategoriesPO> {

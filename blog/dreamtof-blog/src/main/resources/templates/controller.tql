@@ -64,8 +64,8 @@ public class #(table.buildControllerClassName()) {
      * @return 成功返回 true
      */
     @DeleteMapping("remove/{id}")
-    public BaseResponse<Boolean> remove(@PathVariable #(pkType) id) {
-        return ResultUtils.success(appService.delete(id));
+    public BaseResponse<Boolean> removeById(@PathVariable #(pkType) id) {
+        return ResultUtils.success(appService.removeById(id));
     }
 
     /**
@@ -76,7 +76,7 @@ public class #(table.buildControllerClassName()) {
      */
     @DeleteMapping("removeByIds")
     public BaseResponse<Boolean> removeByIds(@RequestBody List<#(pkType)> ids) {
-        return ResultUtils.success(appService.deleteBatch(ids));
+        return ResultUtils.success(appService.removeByIds(ids));
     }
 
     /**

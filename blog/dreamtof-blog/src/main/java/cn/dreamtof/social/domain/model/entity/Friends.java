@@ -1,9 +1,5 @@
 package cn.dreamtof.social.domain.model.entity;
 
-import cn.dreamtof.core.base.CreateTimeAudit;
-import cn.dreamtof.core.base.UpdateTimeAudit;
-import cn.dreamtof.core.base.VersionAudit;
-
 import java.util.UUID;
 import java.io.Serializable;
 import java.io.Serial;
@@ -34,7 +30,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @Slf4j
 @Schema(name="Friends", description = "友链表 领域实体")
-public class Friends implements Serializable, IdAudit{
+public class Friends implements Serializable{
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -53,7 +49,7 @@ public class Friends implements Serializable, IdAudit{
      * 友链网站描述
      */
      @Schema(description = "友链网站描述")
-     private String description;
+     private String desc;
     /**
      * 网站链接
      */

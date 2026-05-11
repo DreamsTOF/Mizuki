@@ -1,16 +1,36 @@
 package cn.dreamtof.system.domain.repository;
 
+import cn.dreamtof.core.base.CursorResult;
 import cn.dreamtof.core.base.PageReq;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import cn.dreamtof.core.base.PageResult;
+import cn.dreamtof.system.domain.model.entity.Announcements;
 
-/**
- * 公告表 分页查询请求
- */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@Schema(name = "AnnouncementsPageReq", description = "公告表分页查询请求")
-public class AnnouncementsPageReq extends PageReq {
-    // 可以在此根据 table.columns 生成特定的过滤字段，如 name, status 等
+import java.util.List;
+import java.util.UUID;
+
+public interface AnnouncementsRepository {
+
+    Announcements create(Announcements entity);
+
+    boolean removeById(UUID id);
+
+    Announcements update(Announcements entity);
+
+    Announcements getById(UUID id);
+
+    List<Announcements> listAll();
+
+    PageResult<Announcements> page(PageReq pageReq);
+
+    Boolean removeByIds(List<UUID> ids);
+
+    boolean saveBatch(List<Announcements> entities);
+
+    boolean existsById(UUID id);
+
+    List<Announcements> listByIds(List<UUID> ids);
+
+    CursorResult<Announcements> seek(UUID cursor, int limit);
+
+    List<Announcements> listActive();
 }

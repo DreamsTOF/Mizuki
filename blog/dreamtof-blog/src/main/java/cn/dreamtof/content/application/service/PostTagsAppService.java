@@ -1,16 +1,34 @@
 package cn.dreamtof.content.application.service;
 
+import cn.dreamtof.content.application.assembler.PostTagsAssembler;
+import cn.dreamtof.content.domain.model.entity.PostTags;
+import cn.dreamtof.content.domain.repository.PostTagsRepository;
 import cn.dreamtof.core.base.PageReq;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import cn.dreamtof.core.base.PageResult;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
-/**
- * 文章-标签关联表 分页查询请求
- */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@Schema(name = "PostTagsPageReq", description = "文章-标签关联表分页查询请求")
-public class PostTagsPageReq extends PageReq {
-    // 可以在此根据 table.columns 生成特定的过滤字段，如 name, status 等
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class PostTagsAppService {
+
+    private final PostTagsRepository postTagsRepository;
+    private final PostTagsAssembler assembler;
+
+    public PageResult<PostTags> pagePostTags(PageReq pageReq) {
+        return postTagsRepository.page(pageReq);
+    }
+
+    public List<PostTags> listByPostId(UUID postId) {
+        return postTagsRepository.listByPostId(postId);
+    }
+
+    public List<PostTags> listByTagId(UUID tagId) {
+        return postTagsRepository.listByTagId(tagId);
+    }
 }

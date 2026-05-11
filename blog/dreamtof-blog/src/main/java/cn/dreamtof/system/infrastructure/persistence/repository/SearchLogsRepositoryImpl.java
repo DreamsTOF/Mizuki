@@ -1,55 +1,38 @@
 package cn.dreamtof.system.infrastructure.persistence.repository;
 
-
+import cn.dreamtof.core.base.CursorResult;
+import cn.dreamtof.core.base.PageReq;
+import cn.dreamtof.core.base.PageResult;
+import cn.dreamtof.system.application.assembler.SearchLogsAssembler;
+import cn.dreamtof.system.domain.model.entity.SearchLogs;
+import cn.dreamtof.system.domain.repository.SearchLogsRepository;
+import cn.dreamtof.system.infrastructure.persistence.mapper.SearchLogsMapper;
+import cn.dreamtof.system.infrastructure.persistence.po.SearchLogsPO;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
-import cn.dreamtof.blog.system.infrastructure.persistence.po.SearchLogsPO; // PO 类
-import cn.dreamtof.blog.system.domain.model.entity.SearchLogs;   // 领域层 Entity
-import cn.dreamtof.blog.system.infrastructure.persistence.mapper.SearchLogsMapper;
-import cn.dreamtof.blog.system.domain.repository.SearchLogsRepository;
-import cn.dreamtof.blog.system.application.assembler.SearchLogsAssembler; // Assembler 移至此处
-import cn.dreamtof.blog.system.api.request.SearchLogsPageReq;
-import cn.dreamtof.blog.system.api.request.SearchLogsCursorReq;
-import cn.dreamtof.core.base.CursorResult;
-import org.springframework.stereotype.Repository;
-import com.mybatisflex.core.paginate.Page;
-import cn.dreamtof.core.base.PageResult;
-import com.mybatisflex.core.query.QueryWrapper;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
-/**
- * 搜索记录表 仓储实现 (Infrastructure Layer)
- * <p>
- * 职责：实现领域层定义的仓储接口，直接与数据库交互。
- * 采用显式 super 调用，确保直接触发底层框架行为，消除递归隐患。
- * </p>
- *
- * @author dream
- * @since 2026-05-08
- */
 @Repository
 @RequiredArgsConstructor
 @Slf4j
 public class SearchLogsRepositoryImpl extends ServiceImpl<SearchLogsMapper, SearchLogsPO> implements SearchLogsRepository {
 
-    private final SearchLogsAssembler assembler; // 注入 MapStruct 转换器
+    private final SearchLogsAssembler assembler;
 
-    // ================== 1. 基础透传操作 (使用 super) ==================
-
-   @Override
-   public SearchLogs create(SearchLogs entity) {
-       // Entity -> PO
-       SearchLogsPO po = assembler.toPO(entity);
-       // MyBatis-Flex 的 super.save(po) 返回 boolean
-       if (super.save(po)) {
-           // 执行成功后，Flex 会自动回填主键 ID 到 po 对象中
-           return assembler.toEntity(po);
-       }
-       return null;
-   }
+    @Override
+    public SearchLogs create(SearchLogs entity) {
+        SearchLogsPO po = assembler.toPO(entity);
+        if (super.save(po)) {
+            return assembler.toEntity(po);
+        }
+        return null;
+    }
 
     @Override
     public boolean removeById(UUID id) {
@@ -58,9 +41,7 @@ public class SearchLogsRepositoryImpl extends ServiceImpl<SearchLogsMapper, Sear
 
     @Override
     public SearchLogs update(SearchLogs entity) {
-        // Entity -> PO
         SearchLogsPO po = assembler.toPO(entity);
-        // MyBatis-Flex 的 super.updateById(po) 返回 boolean
         if (super.updateById(po)) {
             return assembler.toEntity(po);
         }
@@ -70,72 +51,38 @@ public class SearchLogsRepositoryImpl extends ServiceImpl<SearchLogsMapper, Sear
     @Override
     public SearchLogs getById(UUID id) {
         SearchLogsPO po = super.getById(id);
-        // PO -> Entity
         return assembler.toEntity(po);
     }
 
     @Override
     public List<SearchLogs> listAll() {
-        // 查出 PO 列表
         List<SearchLogsPO> poList = super.list();
-        // PO List -> Entity List
         return assembler.toEntityList(poList);
     }
 
-  /**
-   * 分页查询实现
-   */
-  @Override
-  public PageResult<SearchLogs> page(SearchLogsPageReq pageReq) {
-      // 1. 初始化 MyBatis-Flex 的 Page 对象
-      Page<SearchLogsPO> flexPage = Page.of(
-          pageReq.getPageNum(),
-          pageReq.getPageSize()
-      );
-      // 2. 构造查询条件对象 (QueryWrapper)
-      // 此时可根据业务需求，将 pageReq 中的过滤字段映射为数据库查询条件
-      QueryWrapper queryWrapper = QueryWrapper.create();
-
-      // 此处可以根据需求扩展过滤条件，例如：
-      // if (pageReq.getSomeField() != null) {
-      //     queryWrapper.where(TABLE_NAME_PO.SOME_FIELD.eq(pageReq.getSomeField()));
-      // }
-
-      // 3. 执行持久层分页查询
-      Page<SearchLogsPO> resultPage = super.page(flexPage, queryWrapper);
-
-      // 4. 数据层级转换 (PO -> Entity)
-      List<SearchLogs> entityList = assembler.toEntityList(resultPage.getRecords());
-
-      // 5. 组装并返回通用的 PageResult 对象
-      return PageResult.of(
-          entityList,
-          resultPage.getTotalRow(),
-          resultPage.getTotalPage(),
-          resultPage.getPageNumber(),
-          resultPage.getPageSize()
-      );
-  }
-
-    // ================== 2. 增强逻辑实现 ==================
+    @Override
+    public PageResult<SearchLogs> page(PageReq pageReq) {
+        Page<SearchLogsPO> flexPage = Page.of(pageReq.getPageNum(), pageReq.getPageSize());
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        Page<SearchLogsPO> resultPage = super.page(flexPage, queryWrapper);
+        List<SearchLogs> entityList = assembler.toEntityList(resultPage.getRecords());
+        return PageResult.of(entityList, resultPage.getTotalRow(), resultPage.getTotalPage(),
+                resultPage.getPageNumber(), resultPage.getPageSize());
+    }
 
     @Override
     public Boolean removeByIds(List<UUID> ids) {
-        // 调用 ServiceImpl 内置的批量按 ID 删除
         return super.removeByIds(ids);
     }
 
     @Override
     public boolean saveBatch(List<SearchLogs> entities) {
-        // Entity List -> PO List
         List<SearchLogsPO> pos = assembler.toPOList(entities);
-        // 调用 ServiceImpl 内置的批量保存，默认 1000 条一提交
         return super.saveBatch(pos);
     }
 
     @Override
     public boolean existsById(UUID id) {
-        // 利用 Flex 的 queryChain 快速判断，不涉及对象实例化，性能极佳
         return queryChain().where(SearchLogsPO::getId).eq(id).exists();
     }
 
@@ -146,36 +93,28 @@ public class SearchLogsRepositoryImpl extends ServiceImpl<SearchLogsMapper, Sear
     }
 
     @Override
-    public CursorResult<SearchLogs> seek(SearchLogsCursorReq req) {
-        // 1. 类型安全转换：将 Serializable 游标转为具体的 UUID
-        UUID lastId = null;
-        if (req.getCursor() != null) {
-            lastId = (UUID) req.getCursor();
-        }
-
-        // 2. 执行持久层查询 (多查 1 条用于判断 hasNext)
+    public CursorResult<SearchLogs> seek(UUID cursor, int limit) {
         List<SearchLogsPO> poList = queryChain()
-                // 使用 gt (大于) 实现游标跳转，主键必须有序
-                .where(SearchLogsPO::getId).gt(lastId)
+                .where(SearchLogsPO::getId).gt(cursor)
                 .orderBy(SearchLogsPO::getId).asc()
-                .limit(req.getLimit() + 1)
+                .limit(limit + 1)
                 .list();
-
-        // 3. 判断是否有下一页并截取数据
-        boolean hasNext = poList.size() > req.getLimit();
-        List<SearchLogsPO> resultList = hasNext ? poList.subList(0, req.getLimit()) : poList;
-
-        // 4. 计算下一个游标值
+        boolean hasNext = poList.size() > limit;
+        List<SearchLogsPO> resultList = hasNext ? poList.subList(0, limit) : poList;
         UUID nextCursor = null;
         if (!resultList.isEmpty()) {
             nextCursor = resultList.get(resultList.size() - 1).getId();
         }
+        return new CursorResult<>(assembler.toEntityList(resultList), nextCursor, hasNext);
+    }
 
-        // 5. 转换并返回
-        return new CursorResult<>(
-            assembler.toEntityList(resultList),
-            nextCursor,
-            hasNext
-        );
+    @Override
+    public List<Object[]> getHotKeywords(int limit) {
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        queryWrapper.select("keyword, COUNT(*) as cnt");
+        queryWrapper.groupBy("keyword");
+        queryWrapper.orderBy("cnt", false);
+        queryWrapper.limit(limit);
+        return super.listAs(queryWrapper, Object[].class);
     }
 }

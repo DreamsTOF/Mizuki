@@ -1,16 +1,38 @@
 package cn.dreamtof.system.domain.repository;
 
+import cn.dreamtof.core.base.CursorResult;
 import cn.dreamtof.core.base.PageReq;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import cn.dreamtof.core.base.PageResult;
+import cn.dreamtof.system.domain.model.entity.CustomPages;
 
-/**
- * 自定义页面表 分页查询请求
- */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@Schema(name = "CustomPagesPageReq", description = "自定义页面表分页查询请求")
-public class CustomPagesPageReq extends PageReq {
-    // 可以在此根据 table.columns 生成特定的过滤字段，如 name, status 等
+import java.util.List;
+import java.util.UUID;
+
+public interface CustomPagesRepository {
+
+    CustomPages create(CustomPages entity);
+
+    boolean removeById(UUID id);
+
+    CustomPages update(CustomPages entity);
+
+    CustomPages getById(UUID id);
+
+    List<CustomPages> listAll();
+
+    PageResult<CustomPages> page(PageReq pageReq);
+
+    Boolean removeByIds(List<UUID> ids);
+
+    boolean saveBatch(List<CustomPages> entities);
+
+    boolean existsById(UUID id);
+
+    List<CustomPages> listByIds(List<UUID> ids);
+
+    CursorResult<CustomPages> seek(UUID cursor, int limit);
+
+    CustomPages findByPageKey(String pageKey);
+
+    List<CustomPages> listByEnabled(boolean enabled);
 }

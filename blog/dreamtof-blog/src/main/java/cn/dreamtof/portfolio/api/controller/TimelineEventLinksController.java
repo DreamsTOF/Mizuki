@@ -1,16 +1,43 @@
 package cn.dreamtof.portfolio.api.controller;
 
-import cn.dreamtof.core.base.CursorReq;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import cn.dreamtof.core.base.BaseResponse;
+import cn.dreamtof.core.utils.ResultUtils;
+import cn.dreamtof.portfolio.domain.model.entity.TimelineEventLinks;
+import cn.dreamtof.portfolio.application.service.TimelineEventLinksAppService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
- * 时间线链接关联表 游标分页请求
+ * 时间线链接关联表 控制器
+ * <p>
+ * 子表实体，核心操作由 TimelineEventsController 驱动，
+ * 本控制器仅提供基础查询能力。
+ * </p>
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@Schema(name = "TimelineEventLinksCursorReq", description = "时间线链接关联表游标分页请求")
-public class TimelineEventLinksCursorReq extends CursorReq {
-    // 游标字段通常已在基类，此处可扩展其他查询参数
+@Tag(name = "作品集/时间线链接关联表")
+@RestController
+@RequestMapping("/portfolio/timelineEventLinks")
+@RequiredArgsConstructor
+public class TimelineEventLinksController {
+
+    private final TimelineEventLinksAppService appService;
+
+    @PostMapping("save")
+    public BaseResponse<TimelineEventLinks> save(@RequestBody TimelineEventLinks entity) {
+        return ResultUtils.success(appService.create(entity));
+    }
+
+    @DeleteMapping("remove/{id}")
+    public BaseResponse<Boolean> removeById(@PathVariable UUID id) {
+        return ResultUtils.success(appService.removeById(id));
+    }
+
+    @GetMapping("listByTimelineEventId/{timelineEventId}")
+    public BaseResponse<List<TimelineEventLinks>> listByTimelineEventId(@PathVariable UUID timelineEventId) {
+        return ResultUtils.success(appService.listByTimelineEventId(timelineEventId));
+    }
 }

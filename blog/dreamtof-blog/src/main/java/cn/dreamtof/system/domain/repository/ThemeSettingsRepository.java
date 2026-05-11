@@ -1,16 +1,29 @@
 package cn.dreamtof.system.domain.repository;
 
-import cn.dreamtof.core.base.PageReq;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import cn.dreamtof.system.domain.model.entity.ThemeSettings;
 
-/**
- * 主题设置表 分页查询请求
- */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@Schema(name = "ThemeSettingsPageReq", description = "主题设置表分页查询请求")
-public class ThemeSettingsPageReq extends PageReq {
-    // 可以在此根据 table.columns 生成特定的过滤字段，如 name, status 等
+import java.util.List;
+import java.util.UUID;
+
+public interface ThemeSettingsRepository {
+
+    ThemeSettings create(ThemeSettings entity);
+
+    boolean removeById(UUID id);
+
+    ThemeSettings update(ThemeSettings entity);
+
+    ThemeSettings getById(UUID id);
+
+    List<ThemeSettings> listAll();
+
+    boolean saveBatch(List<ThemeSettings> entities);
+
+    boolean existsById(UUID id);
+
+    ThemeSettings getByKey(String settingKey);
+
+    List<ThemeSettings> listUserCustomizable();
+
+    boolean existsByKey(String settingKey);
 }

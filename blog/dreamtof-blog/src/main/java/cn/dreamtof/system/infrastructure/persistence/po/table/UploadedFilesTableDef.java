@@ -8,8 +8,8 @@ import java.io.Serial;
 /**
  * 文件上传记录表 表定义层。
  *
- * @author dream
- * @since 2026-05-08
+ * @author lyl
+ * @since 2026-05-09
  */
 public class UploadedFilesTableDef extends TableDef {
 

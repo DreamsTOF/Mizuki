@@ -1,16 +1,37 @@
 package cn.dreamtof.system.domain.repository;
 
 import cn.dreamtof.core.base.PageReq;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import cn.dreamtof.core.base.PageResult;
+import cn.dreamtof.system.domain.model.entity.NavLinks;
 
-/**
- * 导航链接表 分页查询请求
- */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@Schema(name = "NavLinksPageReq", description = "导航链接表分页查询请求")
-public class NavLinksPageReq extends PageReq {
-    // 可以在此根据 table.columns 生成特定的过滤字段，如 name, status 等
+import java.util.List;
+import java.util.UUID;
+
+public interface NavLinksRepository {
+
+    NavLinks create(NavLinks entity);
+
+    boolean removeById(UUID id);
+
+    NavLinks update(NavLinks entity);
+
+    NavLinks getById(UUID id);
+
+    List<NavLinks> listAll();
+
+    PageResult<NavLinks> page(PageReq pageReq);
+
+    Boolean removeByIds(List<UUID> ids);
+
+    boolean saveBatch(List<NavLinks> entities);
+
+    boolean existsById(UUID id);
+
+    List<NavLinks> listByIds(List<UUID> ids);
+
+    List<NavLinks> listByPosition(String position);
+
+    List<NavLinks> listByParentId(UUID parentId);
+
+    List<NavLinks> listEnabled();
 }

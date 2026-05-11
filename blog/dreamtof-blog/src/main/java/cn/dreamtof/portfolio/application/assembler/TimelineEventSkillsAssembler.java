@@ -1,6 +1,6 @@
 package cn.dreamtof.portfolio.application.assembler;
 
-import cn.dreamtof.blog.portfolio.domain.model.entity.TimelineEventSkills;
+import cn.dreamtof.portfolio.domain.model.entity.TimelineEventSkills;
 import cn.dreamtof.portfolio.infrastructure.persistence.po.TimelineEventSkillsPO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

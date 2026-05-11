@@ -71,7 +71,7 @@ public class #(table.buildServiceClassName()) {
     /**
      * 删除 #(table.comment)
      */
-    public boolean remove(#(pkType) id) {
+    public boolean removeById(#(pkType) id) {
         return repository.removeById(id);
     }
 

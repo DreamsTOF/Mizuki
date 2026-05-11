@@ -1,6 +1,6 @@
 package cn.dreamtof.portfolio.application.assembler;
 
-import cn.dreamtof.blog.portfolio.domain.model.entity.ProjectTags;
+import cn.dreamtof.portfolio.domain.model.entity.ProjectTags;
 import cn.dreamtof.portfolio.infrastructure.persistence.po.ProjectTagsPO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

@@ -1,16 +1,39 @@
 package cn.dreamtof.system.domain.repository;
 
+import cn.dreamtof.core.base.CursorResult;
 import cn.dreamtof.core.base.PageReq;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import cn.dreamtof.core.base.PageResult;
+import cn.dreamtof.system.domain.model.entity.DailyStats;
 
-/**
- * 每日统计汇总表 分页查询请求
- */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@Schema(name = "DailyStatsPageReq", description = "每日统计汇总表分页查询请求")
-public class DailyStatsPageReq extends PageReq {
-    // 可以在此根据 table.columns 生成特定的过滤字段，如 name, status 等
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+
+public interface DailyStatsRepository {
+
+    DailyStats create(DailyStats entity);
+
+    boolean removeById(UUID id);
+
+    DailyStats update(DailyStats entity);
+
+    DailyStats getById(UUID id);
+
+    List<DailyStats> listAll();
+
+    PageResult<DailyStats> page(PageReq pageReq);
+
+    Boolean removeByIds(List<UUID> ids);
+
+    boolean saveBatch(List<DailyStats> entities);
+
+    boolean existsById(UUID id);
+
+    List<DailyStats> listByIds(List<UUID> ids);
+
+    CursorResult<DailyStats> seek(UUID cursor, int limit);
+
+    DailyStats getByStatDate(OffsetDateTime statDate);
+
+    List<DailyStats> listByDateRange(OffsetDateTime startDate, OffsetDateTime endDate);
 }

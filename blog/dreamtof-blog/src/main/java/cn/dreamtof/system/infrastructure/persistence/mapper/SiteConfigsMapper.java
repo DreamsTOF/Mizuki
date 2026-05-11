@@ -1,39 +1,21 @@
 package cn.dreamtof.system.infrastructure.persistence.mapper;
 
-import cn.dreamtof.blog.system.infrastructure.persistence.po.SiteConfigsPO;
-import cn.dreamtof.blog.system.infrastructure.persistence.po.SiteConfigsPOPO;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
-import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import com.mybatisflex.core.BaseMapper;
+import cn.dreamtof.system.infrastructure.persistence.po.SiteConfigsPO;
+
 
 /**
- * 站点配置表 转换器
+ * 站点配置表 Mapper 数据库访问接口
  * <p>
- * 职责：实现DTO ,VO, Entity 与 PO 之间的无损映射。
+ * 继承 BaseMapper 以获得 MyBatis-Flex 提供的基础 CRUD 能力。
  * </p>
+ *
+ * @author lyl
+ * @since 2026-05-09
  */
-@Mapper(componentModel = "spring")
-public interface SiteConfigsPOAssembler {
+@Mapper
+public interface SiteConfigsMapper extends BaseMapper<SiteConfigsPO> {
 
-    /**
-     * Entity 转 PO (入库)
-     */
-    SiteConfigsPOPO toPO(SiteConfigsPO entity);
-
-    /**
-     * PO 转 Entity (出库)
-     */
-    SiteConfigsPO toEntity(SiteConfigsPOPO po);
-
-    /**
-     * 集合转换
-     * PO 转 Entity (出库)
-     */
-    List<SiteConfigsPO> toEntityList(List<SiteConfigsPOPO> poList);
-
-    /**
-     * 集合转换
-     * Entity 转 PO (入库)
-     */
-    List<SiteConfigsPOPO> toPOList(List<SiteConfigsPO> entityList);
 }

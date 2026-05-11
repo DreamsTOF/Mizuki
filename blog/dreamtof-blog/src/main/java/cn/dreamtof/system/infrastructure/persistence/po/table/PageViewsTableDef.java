@@ -8,8 +8,8 @@ import java.io.Serial;
 /**
  * 页面访问统计表 表定义层。
  *
- * @author dream
- * @since 2026-05-08
+ * @author lyl
+ * @since 2026-05-09
  */
 public class PageViewsTableDef extends TableDef {
 

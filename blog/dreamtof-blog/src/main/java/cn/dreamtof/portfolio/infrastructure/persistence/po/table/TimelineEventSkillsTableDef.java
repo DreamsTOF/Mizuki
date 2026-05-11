@@ -8,8 +8,8 @@ import java.io.Serial;
 /**
  * 时间线技能关联表 表定义层。
  *
- * @author dream
- * @since 2026-05-08
+ * @author lyl
+ * @since 2026-05-09
  */
 public class TimelineEventSkillsTableDef extends TableDef {
 

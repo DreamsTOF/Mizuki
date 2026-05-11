@@ -13,10 +13,10 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
+import java.io.File;
 import java.io.InputStream;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -27,94 +27,58 @@ import java.util.concurrent.TimeUnit;
  * 👑 DDD 严格四层架构生成器 (模块-表映射批量生成版)
  * <p>
  * 核心特性：
- * 1. 多项目支持：通过 ACTIVE_PROJECT 切换 SONGS / BLOG 项目
- * 2. 模块-表映射配置：一个模块对应多张表，一次运行批量生成
- * 3. 多数据源支持：支持 PG(主库) 和 ClickHouse(日志库)
- * 4. 四层架构生成：Domain / Application / Infrastructure / API
+ * 1. 模块-表映射配置：一个模块对应多张表，一次运行批量生成
+ * 2. 多数据源支持：支持 PG(主库) 和 ClickHouse(日志库)
+ * 3. 四层架构生成：Domain / Application / Infrastructure / API
  * </p>
  *
  * <p>使用示例：</p>
  * <pre>
- * // 切换 ACTIVE_PROJECT 来决定生成哪个项目的代码
- * private static final Project ACTIVE_PROJECT = Project.BLOG;
+ * // 在 MODULE_CONFIGS 中配置模块和表映射
+ * new ModuleConfig("auth", "认证模块", "master", "public")
+ *     .withTables("user", "role", "permission")
  * </pre>
  */
 public class MyBatisCodeGenerator {
 
     // ==========================================
-    // 🎯 项目选择（核心开关）
-    // ==========================================
-    private enum Project {
-        SONGS,  // dreamtof-songs 歌曲管理系统
-        BLOG    // Mizuki 博客系统
-    }
-
-    private static final Project ACTIVE_PROJECT = Project.BLOG;
-
-    // ==========================================
     // ⚙️ 全局基础配置
     // ==========================================
     private static final String BASE_PACKAGE_PREFIX = "cn.dreamtof";
-
-    private static String resolveModuleName() {
-        return switch (ACTIVE_PROJECT) {
-            case SONGS -> "dreamtof-songs";
-            case BLOG -> "dreamtof-blog";
-        };
-    }
-
-    private static String resolveAppBasePackage() {
-        return switch (ACTIVE_PROJECT) {
-            case SONGS -> BASE_PACKAGE_PREFIX + ".songs";
-            case BLOG -> BASE_PACKAGE_PREFIX + ".blog";
-        };
-    }
+    // 定义相对根目录的子模块路径
+    private static final String MODULE_NAME = "blog/dreamtof-blog";
 
     // ==========================================
     // 🚀 模块-表映射配置 (核心配置区)
     // ==========================================
+    // 在这里配置需要生成的模块，每个模块对应一个数据源和一组表
+    // 格式：new ModuleConfig(模块名, 模块中文名, 数据源别名, schema).withTables(表名...)
+    private static final List<ModuleConfig> MODULE_CONFIGS = Arrays.asList(
+            // 认证模块 - 使用主库
+            new ModuleConfig("auth", "认证", "master", "public")
+                    .withTables("user"),
 
-    private static List<ModuleConfig> buildModuleConfigs() {
-        return switch (ACTIVE_PROJECT) {
-            case SONGS -> buildSongsModules();
-            case BLOG -> buildBlogModules();
-        };
-    }
 
-    private static List<ModuleConfig> buildSongsModules() {
-        return Arrays.asList(
-                // 认证模块 - 使用主库
-                new ModuleConfig("auth", "认证", "master", "public")
-                        .withTables("user"),
+            // 歌曲模块 - 使用主库
+            new ModuleConfig("song", "歌曲", "master", "public")
+                    .withTables("song", "song_label", "song_click_stat","song_click_log","playlist", "playlist_song","label"),
 
-                // 歌曲模块 - 使用主库
-                new ModuleConfig("song", "歌曲", "master", "public")
-                        .withTables("song", "song_label", "song_click_stat","song_click_log","playlist", "playlist_song","label")
-
-                // 歌单模块 - 使用主库
-//                new ModuleConfig("playlist", "歌单", "master", "public")
-//                        .withTables("playlist", "playlist_song"),
+            // 歌单模块 - 使用主库
+//            new ModuleConfig("playlist", "歌单", "master", "public")
+//                    .withTables("playlist", "playlist_song"),
 //
-//                // 标签模块 - 使用主库
-//                new ModuleConfig("labels", "标签", "master", "public")
-//                        .withTables("label"),
+//            // 标签模块 - 使用主库
+//            new ModuleConfig("labels", "标签", "master", "public")
+//                    .withTables("label"),
 
-                // 日志模块 - 使用 ClickHouse
-//                new ModuleConfig("log", "日志", "clickhouse", null)
-//                        .withTables("app_logs", "operation_logs")
-        );
-    }
+            // 日志模块 - 使用 ClickHouse
+//            new ModuleConfig("log", "日志", "clickhouse", null)
+//                    .withTables("app_logs", "operation_logs"),
+            null
+    );
 
-    /**
-     * Mizuki 博客系统 — 6 大业务模块（与 backend-requirements/ 目录结构严格对齐）
-     * <p>
-     * 模块目录: content / device / media / portfolio / social / system
-     * diary 表归入 content（diary API doc 在 content/ 目录下）
-     * analytics 相关表归入 system（无独立目录）
-     * </p>
-     */
-    private static List<ModuleConfig> buildBlogModules() {
-        return Arrays.asList(
+    private static  final List<ModuleConfig>  BLOG_MODER =
+  Arrays.asList(
                 // ========== 1. Content 模块 — 文章、标签、分类、归档、日记 ==========
                 new ModuleConfig("content", "内容管理", "master", "public")
                         .withTables("posts", "tags", "post_tags", "categories", "archives",
@@ -145,9 +109,9 @@ public class MyBatisCodeGenerator {
                 new ModuleConfig("system", "系统管理", "master", "public")
                         .withTables("site_configs", "custom_pages", "uploaded_files",
                                 "nav_links", "banners", "theme_settings",
-                                "page_views", "daily_stats", "search_logs", "announcements")
+                                "page_views", "daily_stats", "search_logs", "announcements"),
+                                null
         );
-    }
 
     // ==========================================
     // 🗂️ 数据源别名常量
@@ -161,32 +125,21 @@ public class MyBatisCodeGenerator {
     public static void main(String[] args) {
         registerTypeMappings();
 
-        List<ModuleConfig> moduleConfigs = buildModuleConfigs();
-
         System.out.println(">>> =========================================");
         System.out.println(">>> 🚀 DDD 四层架构代码生成器 (多线程并发版)");
-        System.out.println(">>> 📁 项目: " + ACTIVE_PROJECT + " | 模块: " + resolveModuleName());
         System.out.println(">>> =========================================");
 
+        int moduleCount = BLOG_MODER.size()-1;
         String projectPath = getProjectPath();
-
-        // 1. 初始化线程池：建议线程数为 CPU 核心数或固定 4-8 个（因为主要是 IO 密集型）
-        int nThreads = Math.min(moduleConfigs.size(), Runtime.getRuntime().availableProcessors());
-        ExecutorService executor = Executors.newFixedThreadPool(nThreads);
-
-        System.out.println(">>> 🧵 并行任务启动，模块数: " + moduleConfigs.size() + ", 线程数: " + nThreads);
-        System.out.println();
-
-        for (ModuleConfig module : moduleConfigs) {
+        for (int i = 0; i < moduleCount; i++) {
+            final int index = i;
+            final ModuleConfig module = BLOG_MODER.get(index);
             // 2. 初始化数据源（注意：该方法内部必须实现线程安全）
             DataSource dataSource = getOrCreateDataSource(module.getDbAlias());
-            // 提交异步任务
-            executor.submit(() -> {
                 String threadName = Thread.currentThread().getName();
                 try {
-                    System.out.printf("[%s] >>> 📦 正在生成: %s (%s) [%d 表]%n",
-                            threadName, module.getModuleName(), module.getModuleCnName(),
-                            module.getTables().length);
+                    System.out.printf("[%s] >>> 📦 正在生成: %s (%s)%n",
+                            threadName, module.getModuleName(), module.getModuleCnName());
                     // 执行生成逻辑
                     generateModule(module, dataSource, projectPath);
 
@@ -197,19 +150,8 @@ public class MyBatisCodeGenerator {
                             threadName, module.getModuleName(), e.getMessage());
                     e.printStackTrace();
                 }
-            });
-        }
-
-        // 3. 关闭线程池并等待结束
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(30, TimeUnit.MINUTES)) {
-                executor.shutdownNow();
             }
-        } catch (InterruptedException e) {
-            executor.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
+
 
         System.out.println("\n>>> =========================================");
         System.out.println(">>> 🎉 所有模块生成任务处理完毕！");
@@ -218,29 +160,43 @@ public class MyBatisCodeGenerator {
 
     /**
      * 为单个模块执行四阶段代码生成
+     * 💡 修复：强制在包名中加入 .blog 层级，确保代码生成在正确的业务包下
      */
     private static void generateModule(ModuleConfig module, DataSource dataSource, String projectPath) {
-        String basePackage = resolveAppBasePackage() + "." + module.getModuleName();
+        // 修正：在 PREFIX 后强制拼接 .blog，使最终包名为 cn.dreamtof.blog.[moduleName]
+        String basePackage = BASE_PACKAGE_PREFIX +"."+ module.getModuleName();
 
-        // [第一阶段] 纯持久化层 - 开启覆盖生成
-        System.out.println(">>>   [1/4] 生成 Infra 持久化层 (PO, Mapper)...");
-        GlobalConfig infraConfig = createInfraPersistenceConfig(projectPath, basePackage, module);
-        runGenerator(dataSource, infraConfig, module.getDbAlias());
+        // 1. Infra
+        runGenerator(dataSource, createInfraPersistenceConfig(projectPath, basePackage, module), module.getDbAlias());
+        // 2. App & Api & Domain Entity
+        runGenerator(dataSource, createAppApiConfig(projectPath, basePackage, module), module.getDbAlias());
+        // 3. Repository
+        runGenerator(dataSource, createRepositoryConfig(projectPath, basePackage, module), module.getDbAlias());
+        // 4. DTOs
+        runGenerator(dataSource, createApiDtoConfig(projectPath, basePackage, module), module.getDbAlias());
+    }
 
-        // [第二阶段] 领域模型与应用服务 - 不覆盖
-        System.out.println(">>>   [2/4] 生成 Domain Entity & Application Services...");
-        GlobalConfig appApiConfig = createAppApiConfig(projectPath, basePackage, module);
-        runGenerator(dataSource, appApiConfig, module.getDbAlias());
-//
-//         [第三阶段] 仓储接口与实现 - 不覆盖
-        System.out.println(">>>   [3/4] 生成 Domain Repository Interfaces & Impls...");
-        GlobalConfig repoConfig = createRepositoryConfig(projectPath, basePackage, module);
-        runGenerator(dataSource, repoConfig, module.getDbAlias());
-//
-//         [第四阶段] API DTOs - 不覆盖
-        System.out.println(">>>   [4/4] 生成 API DTOs...");
-        GlobalConfig apiDtoConfig = createApiDtoConfig(projectPath, basePackage, module);
-        runGenerator(dataSource, apiDtoConfig, module.getDbAlias());
+    /**
+     * 💡 修复：针对 C:/code/blog/Mizuki 层级结构的路径探测逻辑
+     */
+    private static String getProjectPath() {
+        String userDir = System.getProperty("user.dir").replaceAll("\\\\", "/");
+
+
+        // 情况 A：如果你已经在 dreamtof-blog 目录里运行
+        if (userDir.endsWith(MODULE_NAME) || userDir.endsWith("dreamtof-blog")) {
+            // 如果是在 blog 目录下但不在 dreamtof-blog 里，需补全
+            return userDir.endsWith(MODULE_NAME) ? userDir : userDir + "/dreamtof-blog";
+        }
+
+        // 情况 B：如果你在 Mizuki 根目录运行，拼接出完整的子模块物理路径
+        File subModuleDir = new File(userDir, MODULE_NAME);
+        if (subModuleDir.exists() && subModuleDir.isDirectory()) {
+            return subModuleDir.getAbsolutePath().replaceAll("\\\\", "/");
+        }
+
+        // 兜底方案：直接返回当前目录（开发者需手动确认运行位置）
+        return userDir;
     }
 
     /**
@@ -272,25 +228,9 @@ public class MyBatisCodeGenerator {
     }
 
     /**
-     * 获取项目物理路径
+     * 💡 修复：更健壮的项目路径检测逻辑
      */
-    private static String getProjectPath() {
-        String userDir = System.getProperty("user.dir");
-        String path = userDir.replaceAll("\\\\", "/");
 
-        if (path.endsWith("/")) {
-            path = path.substring(0, path.length() - 1);
-        }
-
-        String moduleName = resolveModuleName();
-        String lastDirName = path.substring(path.lastIndexOf("/") + 1);
-
-        if (!moduleName.equals(lastDirName)) {
-            path += "/" + moduleName;
-            System.out.println(">>> 💡 检测到当前在根目录运行，已自动修正为子模块: [" + moduleName + "]");
-        }
-        return path;
-    }
 
     // ==========================================
     // 🛠️ 各阶段配置方法
@@ -352,7 +292,7 @@ public class MyBatisCodeGenerator {
         }
 
         // 自定义配置：模块中文名和 URL 前缀
-        config.setCustomConfig(java.util.Map.of(
+        config.setCustomConfig(Map.of(
                 "tagPrefix", module.getModuleCnName(),
                 "urlPrefix", module.getModuleName()
         ));

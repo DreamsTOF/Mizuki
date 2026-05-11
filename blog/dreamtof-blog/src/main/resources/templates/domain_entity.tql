@@ -1,9 +1,5 @@
 package #(packageConfig.entityPackage);
 
-import cn.dreamtof.core.base.CreateTimeAudit;
-import cn.dreamtof.core.base.UpdateTimeAudit;
-import cn.dreamtof.core.base.VersionAudit;
-
 import java.util.UUID;
 import java.io.Serializable;
 import java.io.Serial;
@@ -18,7 +14,7 @@ import lombok.EqualsAndHashCode;
 import java.time.OffsetDateTime;
 
 
-#set(impls = ["Serializable","IdAudit"])
+#set(impls = ["Serializable"])
 
 /**
  * #(table.comment) 领域实体

@@ -1,6 +1,6 @@
 package cn.dreamtof.system.application.assembler;
 
-import cn.dreamtof.blog.system.domain.model.entity.PageViews;
+import cn.dreamtof.system.domain.model.entity.PageViews;
 import cn.dreamtof.system.infrastructure.persistence.po.PageViewsPO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

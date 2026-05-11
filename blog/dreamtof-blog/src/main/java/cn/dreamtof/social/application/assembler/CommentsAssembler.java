@@ -1,6 +1,6 @@
 package cn.dreamtof.social.application.assembler;
 
-import cn.dreamtof.blog.social.domain.model.entity.Comments;
+import cn.dreamtof.social.domain.model.entity.Comments;
 import cn.dreamtof.social.infrastructure.persistence.po.CommentsPO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

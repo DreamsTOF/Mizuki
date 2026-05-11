@@ -1,116 +1,16 @@
 package cn.dreamtof.social.api.request;
 
-
-import com.mybatisflex.core.paginate.Page;
-import cn.dreamtof.core.base.PageResult;
-import cn.dreamtof.social.domain.model.entity.Friends;   // 领域层 Entity
-import cn.dreamtof.blog.social.api.request.FriendsPageReq;
-import cn.dreamtof.social.api.request.FriendsCursorReq;
-import cn.dreamtof.core.base.CursorResult;
-import java.util.List;
-
-import java.util.UUID;
+import cn.dreamtof.core.base.PageReq;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+import lombok.EqualsAndHashCode;
 
 /**
- * 友链表 仓储接口 (Domain Layer)
- * <p>
- * 职责：定义领域层所需的持久化契约。
- * 屏蔽底层框架 (MyBatis-Flex) 细节，仅操作领域实体。
- * </p>
- *
- * @author dream
- * @since 2026-05-08
+ * 友链表 分页查询请求
  */
-public interface FriendsPageReq {
-
-    // ================== 1. 基础具名操作 ==================
-
-    /**
-     * 保存实体
-     *
-     * @param entity 领域对象
-     * @return 包含 ID 的领域对象
-     */
-    Friends create(Friends entity);
-
-    /**
-     * 根据 ID 删除
-     *
-     * @param id 主键
-     * @return true 成功
-     */
-    boolean removeById(UUID id);
-
-    /**
-     * 根据 ID 更新
-     *
-     * @param entity 包含 ID 的领域对象
-     * @return 更新后的领域对象
-     */
-    Friends update(Friends entity);
-
-    /**
-     * 根据 ID 获取详情
-     *
-     * @param id 主键
-     * @return 领域对象
-     */
-    Friends getById(UUID id);
-
-    /**
-     * 获取全量列表
-     *
-     * @return 领域实体集合
-     */
-    List<Friends> listAll();
-
-    /**
-     * 分页查询 (增强版)
-     *
-     * @param pageReq 分页请求参数
-     * @return 领域实体分页结果
-     */
-    PageResult<Friends> page(FriendsPageReq pageReq);
-
-    // ================== 2. 增强扩展操作 ==================
-
-    /**
-     * 批量删除
-     *
-     * @param ids ID 集合
-     * @return true 执行成功
-     */
-    Boolean removeByIds(List<UUID> ids);
-
-    /**
-     * 批量保存
-     *
-     * @param entities 领域实体集合
-     * @return true 全部成功
-     */
-    boolean saveBatch(List<Friends> entities);
-
-    /**
-     * 检查是否存在
-     *
-     * @param id 主键
-     * @return true 存在
-     */
-    boolean existsById(UUID id);
-
-    /**
-     * 根据 ID 集合批量获取
-     *
-     * @param ids ID 集合
-     * @return 领域实体列表
-     */
-    List<Friends> listByIds(List<UUID> ids);
-
-    /**
-     * 游标查询 (Seek Method / 瀑布流)
-     *
-     * @param req 游标查询请求
-     * @return 分页结果包装类
-     */
-    CursorResult<Friends> seek(FriendsCursorReq req);
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Schema(name = "FriendsPageReq", description = "友链表分页查询请求")
+public class FriendsPageReq extends PageReq {
+    // 可以在此根据 table.columns 生成特定的过滤字段，如 name, status 等
 }

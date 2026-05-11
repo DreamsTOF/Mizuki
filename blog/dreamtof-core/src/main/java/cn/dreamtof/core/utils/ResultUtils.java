@@ -29,4 +29,27 @@ public class ResultUtils {
         return new BaseResponse<>(0, null, null, true);
     }
 
+    /**
+     * 失败
+     *
+     * @param message 错误消息
+     * @param <T>     数据类型
+     * @return 响应
+     */
+    public static <T> BaseResponse<T> error(String message) {
+        return new BaseResponse<>(-1, null, message, false);
+    }
+
+    /**
+     * 失败（带状态码）
+     *
+     * @param code    错误码
+     * @param message 错误消息
+     * @param <T>     数据类型
+     * @return 响应
+     */
+    public static <T> BaseResponse<T> error(int code, String message) {
+        return new BaseResponse<>(code, null, message, false);
+    }
+
 }

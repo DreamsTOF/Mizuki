@@ -1,116 +1,41 @@
 package cn.dreamtof.portfolio.application.service;
 
+import cn.dreamtof.portfolio.domain.model.entity.ProjectTechStacks;
+import cn.dreamtof.portfolio.domain.repository.ProjectTechStacksRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
-import com.mybatisflex.core.paginate.Page;
-import cn.dreamtof.core.base.PageResult;
-import cn.dreamtof.blog.portfolio.domain.model.entity.ProjectTechStacks;   // 领域层 Entity
-import cn.dreamtof.blog.portfolio.api.request.ProjectTechStacksPageReq;
-import cn.dreamtof.blog.portfolio.api.request.ProjectTechStacksCursorReq;
-import cn.dreamtof.core.base.CursorResult;
 import java.util.List;
-
 import java.util.UUID;
 
 /**
- * 项目技术栈关联表 仓储接口 (Domain Layer)
+ * 项目技术栈关联表 应用服务
  * <p>
- * 职责：定义领域层所需的持久化契约。
- * 屏蔽底层框架 (MyBatis-Flex) 细节，仅操作领域实体。
+ * 子表实体，核心业务由 ProjectDomainService 编排，
+ * 本服务仅提供基础 CRUD 代理能力。
  * </p>
- *
- * @author dream
- * @since 
  */
-public interface ProjectTechStacksAppService {
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class ProjectTechStacksAppService {
 
-    // ================== 1. 基础具名操作 ==================
+    private final ProjectTechStacksRepository repository;
 
-    /**
-     * 保存实体
-     *
-     * @param entity 领域对象
-     * @return 包含 ID 的领域对象
-     */
-    ProjectTechStacks create(ProjectTechStacks entity);
+    public ProjectTechStacks create(ProjectTechStacks entity) {
+        return repository.create(entity);
+    }
 
-    /**
-     * 根据 ID 删除
-     *
-     * @param id 主键
-     * @return true 成功
-     */
-    boolean removeById(UUID id);
+    public boolean removeById(UUID id) {
+        return repository.removeById(id);
+    }
 
-    /**
-     * 根据 ID 更新
-     *
-     * @param entity 包含 ID 的领域对象
-     * @return 更新后的领域对象
-     */
-    ProjectTechStacks update(ProjectTechStacks entity);
+    public ProjectTechStacks getDetail(UUID id) {
+        return repository.getById(id);
+    }
 
-    /**
-     * 根据 ID 获取详情
-     *
-     * @param id 主键
-     * @return 领域对象
-     */
-    ProjectTechStacks getById(UUID id);
-
-    /**
-     * 获取全量列表
-     *
-     * @return 领域实体集合
-     */
-    List<ProjectTechStacks> listAll();
-
-    /**
-     * 分页查询 (增强版)
-     *
-     * @param pageReq 分页请求参数
-     * @return 领域实体分页结果
-     */
-    PageResult<ProjectTechStacks> page(ProjectTechStacksPageReq pageReq);
-
-    // ================== 2. 增强扩展操作 ==================
-
-    /**
-     * 批量删除
-     *
-     * @param ids ID 集合
-     * @return true 执行成功
-     */
-    Boolean removeByIds(List<UUID> ids);
-
-    /**
-     * 批量保存
-     *
-     * @param entities 领域实体集合
-     * @return true 全部成功
-     */
-    boolean saveBatch(List<ProjectTechStacks> entities);
-
-    /**
-     * 检查是否存在
-     *
-     * @param id 主键
-     * @return true 存在
-     */
-    boolean existsById(UUID id);
-
-    /**
-     * 根据 ID 集合批量获取
-     *
-     * @param ids ID 集合
-     * @return 领域实体列表
-     */
-    List<ProjectTechStacks> listByIds(List<UUID> ids);
-
-    /**
-     * 游标查询 (Seek Method / 瀑布流)
-     *
-     * @param req 游标查询请求
-     * @return 分页结果包装类
-     */
-    CursorResult<ProjectTechStacks> seek(ProjectTechStacksCursorReq req);
+    public List<ProjectTechStacks> listByProjectId(UUID projectId) {
+        return repository.listByProjectId(projectId);
+    }
 }

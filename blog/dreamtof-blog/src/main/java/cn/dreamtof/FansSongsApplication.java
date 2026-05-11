@@ -16,7 +16,7 @@ public class FansSongsApplication {
 
         SpringApplication.run(FansSongsApplication.class, args);
 
-        System.out.println("(♥◠‿◠)ﾉﾞ  FansSongs 服务启动成功   ლ(´ڡ`ლ)ﾞ  ");
+        System.out.println("(♥◠‿◠)ﾉﾞ   服务启动成功   ლ(´ڡ`ლ)ﾞ  ");
     }
 
 }

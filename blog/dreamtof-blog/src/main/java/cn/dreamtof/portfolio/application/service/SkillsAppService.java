@@ -1,116 +1,105 @@
 package cn.dreamtof.portfolio.application.service;
 
-
-import com.mybatisflex.core.paginate.Page;
+import cn.dreamtof.core.base.PageReq;
 import cn.dreamtof.core.base.PageResult;
-import cn.dreamtof.blog.portfolio.domain.model.entity.Skills;   // 领域层 Entity
-import cn.dreamtof.blog.portfolio.api.request.SkillsPageReq;
-import cn.dreamtof.blog.portfolio.api.request.SkillsCursorReq;
-import cn.dreamtof.core.base.CursorResult;
-import java.util.List;
+import cn.dreamtof.core.utils.JsonUtils;
+import cn.dreamtof.portfolio.api.vo.SkillVO;
+import cn.dreamtof.portfolio.application.assembler.SkillsAssembler;
+import cn.dreamtof.portfolio.domain.model.entity.Skills;
+import cn.dreamtof.portfolio.domain.service.SkillDomainService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
-/**
- * 技能表 仓储接口 (Domain Layer)
- * <p>
- * 职责：定义领域层所需的持久化契约。
- * 屏蔽底层框架 (MyBatis-Flex) 细节，仅操作领域实体。
- * </p>
- *
- * @author dream
- * @since 
- */
-public interface SkillsAppService {
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class SkillsAppService {
 
-    // ================== 1. 基础具名操作 ==================
+    private final SkillDomainService skillDomainService;
+    private final SkillsAssembler assembler;
 
-    /**
-     * 保存实体
-     *
-     * @param entity 领域对象
-     * @return 包含 ID 的领域对象
-     */
-    Skills create(Skills entity);
+    public SkillVO createSkill(String name, String description, String icon,
+                               String category, String level,
+                               Integer experienceYears, Integer experienceMonths,
+                               String color, String projects, String certifications) {
+        Skills entity = Skills.create(name, description, icon, category, level,
+                experienceYears, experienceMonths, color, projects, certifications);
+        Skills created = skillDomainService.createSkill(entity);
+        log.info("技能创建完成, skillId={}, name={}", created.getId(), name);
+        return toVO(created);
+    }
 
-    /**
-     * 根据 ID 删除
-     *
-     * @param id 主键
-     * @return true 成功
-     */
-    boolean removeById(UUID id);
+    public SkillVO updateSkill(UUID id, String name, String description, String icon,
+                               String category, String level,
+                               Integer experienceYears, Integer experienceMonths,
+                               String color, String projects, String certifications) {
+        Skills existing = skillDomainService.getById(id);
+        existing.update(name, description, icon, category, level,
+                experienceYears, experienceMonths, color, projects, certifications);
+        Skills updated = skillDomainService.updateSkill(existing);
+        log.info("技能更新完成, skillId={}", id);
+        return toVO(updated);
+    }
 
-    /**
-     * 根据 ID 更新
-     *
-     * @param entity 包含 ID 的领域对象
-     * @return 更新后的领域对象
-     */
-    Skills update(Skills entity);
+    public boolean deleteSkill(UUID id) {
+        return skillDomainService.deleteSkill(id);
+    }
 
-    /**
-     * 根据 ID 获取详情
-     *
-     * @param id 主键
-     * @return 领域对象
-     */
-    Skills getById(UUID id);
+    public SkillVO getDetail(UUID id) {
+        Skills entity = skillDomainService.getById(id);
+        return toVO(entity);
+    }
 
-    /**
-     * 获取全量列表
-     *
-     * @return 领域实体集合
-     */
-    List<Skills> listAll();
+    public List<SkillVO> listAll() {
+        List<Skills> entities = skillDomainService.listAll();
+        return toVOList(entities);
+    }
 
-    /**
-     * 分页查询 (增强版)
-     *
-     * @param pageReq 分页请求参数
-     * @return 领域实体分页结果
-     */
-    PageResult<Skills> page(SkillsPageReq pageReq);
+    public List<SkillVO> listByCategory(String category) {
+        List<Skills> entities = skillDomainService.listByCategory(category);
+        return toVOList(entities);
+    }
 
-    // ================== 2. 增强扩展操作 ==================
+    public List<String> listCategories() {
+        return skillDomainService.listCategories();
+    }
 
-    /**
-     * 批量删除
-     *
-     * @param ids ID 集合
-     * @return true 执行成功
-     */
-    Boolean removeByIds(List<UUID> ids);
+    public PageResult<SkillVO> pageSkills(PageReq pageReq) {
+        PageResult<Skills> pageResult = skillDomainService.page(pageReq);
+        List<SkillVO> voList = toVOList(pageResult.getRecords());
+        return PageResult.of(voList, pageResult.getTotal(), pageResult.getPages(),
+                pageResult.getPageNum(), pageResult.getPageSize());
+    }
 
-    /**
-     * 批量保存
-     *
-     * @param entities 领域实体集合
-     * @return true 全部成功
-     */
-    boolean saveBatch(List<Skills> entities);
+    // ==========================================
+    // 手动 VO 转换（字段名与 Entity 不一致，无法依赖 MapStruct 自动映射）
+    // ==========================================
 
-    /**
-     * 检查是否存在
-     *
-     * @param id 主键
-     * @return true 存在
-     */
-    boolean existsById(UUID id);
+    private SkillVO toVO(Skills entity) {
+        SkillVO vo = new SkillVO();
+        vo.setId(entity.getId());
+        vo.setName(entity.getName());
+        vo.setDescription(entity.getDescription());
+        vo.setIcon(entity.getIcon());
+        vo.setCategory(entity.getCategory());
+        vo.setLevel(entity.getLevel());
+        vo.setExperience(new SkillVO.Experience(
+                entity.getExperienceYears() != null ? entity.getExperienceYears() : 0,
+                entity.getExperienceMonths() != null ? entity.getExperienceMonths() : 0
+        ));
+        vo.setProjects(JsonUtils.parseList(entity.getProjects(), String.class));
+        vo.setCertifications(JsonUtils.parseList(entity.getCertifications(), String.class));
+        vo.setColor(entity.getColor());
+        vo.setCreatedAt(entity.getCreatedAt());
+        vo.setUpdatedAt(entity.getUpdatedAt());
+        return vo;
+    }
 
-    /**
-     * 根据 ID 集合批量获取
-     *
-     * @param ids ID 集合
-     * @return 领域实体列表
-     */
-    List<Skills> listByIds(List<UUID> ids);
-
-    /**
-     * 游标查询 (Seek Method / 瀑布流)
-     *
-     * @param req 游标查询请求
-     * @return 分页结果包装类
-     */
-    CursorResult<Skills> seek(SkillsCursorReq req);
+    private List<SkillVO> toVOList(List<Skills> entities) {
+        return entities.stream().map(this::toVO).toList();
+    }
 }

@@ -1,55 +1,34 @@
 package cn.dreamtof.social.infrastructure.persistence.repository;
 
-
+import cn.dreamtof.social.application.assembler.FriendTagLinksAssembler;
+import cn.dreamtof.social.domain.model.entity.FriendTagLinks;
+import cn.dreamtof.social.domain.repository.FriendTagLinksRepository;
+import cn.dreamtof.social.infrastructure.persistence.mapper.FriendTagLinksMapper;
+import cn.dreamtof.social.infrastructure.persistence.po.FriendTagLinksPO;
+import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
-import cn.dreamtof.blog.social.infrastructure.persistence.po.FriendTagLinksPO; // PO 类
-import cn.dreamtof.blog.social.domain.model.entity.FriendTagLinks;   // 领域层 Entity
-import cn.dreamtof.blog.social.infrastructure.persistence.mapper.FriendTagLinksMapper;
-import cn.dreamtof.blog.social.domain.repository.FriendTagLinksRepository;
-import cn.dreamtof.blog.social.application.assembler.FriendTagLinksAssembler; // Assembler 移至此处
-import cn.dreamtof.blog.social.api.request.FriendTagLinksPageReq;
-import cn.dreamtof.blog.social.api.request.FriendTagLinksCursorReq;
-import cn.dreamtof.core.base.CursorResult;
-import org.springframework.stereotype.Repository;
-import com.mybatisflex.core.paginate.Page;
-import cn.dreamtof.core.base.PageResult;
-import com.mybatisflex.core.query.QueryWrapper;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
-/**
- * 友链-标签关联表 仓储实现 (Infrastructure Layer)
- * <p>
- * 职责：实现领域层定义的仓储接口，直接与数据库交互。
- * 采用显式 super 调用，确保直接触发底层框架行为，消除递归隐患。
- * </p>
- *
- * @author dream
- * @since 2026-05-08
- */
 @Repository
 @RequiredArgsConstructor
 @Slf4j
 public class FriendTagLinksRepositoryImpl extends ServiceImpl<FriendTagLinksMapper, FriendTagLinksPO> implements FriendTagLinksRepository {
 
-    private final FriendTagLinksAssembler assembler; // 注入 MapStruct 转换器
+    private final FriendTagLinksAssembler assembler;
 
-    // ================== 1. 基础透传操作 (使用 super) ==================
-
-   @Override
-   public FriendTagLinks create(FriendTagLinks entity) {
-       // Entity -> PO
-       FriendTagLinksPO po = assembler.toPO(entity);
-       // MyBatis-Flex 的 super.save(po) 返回 boolean
-       if (super.save(po)) {
-           // 执行成功后，Flex 会自动回填主键 ID 到 po 对象中
-           return assembler.toEntity(po);
-       }
-       return null;
-   }
+    @Override
+    public FriendTagLinks create(FriendTagLinks entity) {
+        FriendTagLinksPO po = assembler.toPO(entity);
+        if (super.save(po)) {
+            return assembler.toEntity(po);
+        }
+        return null;
+    }
 
     @Override
     public boolean removeById(UUID id) {
@@ -57,125 +36,39 @@ public class FriendTagLinksRepositoryImpl extends ServiceImpl<FriendTagLinksMapp
     }
 
     @Override
-    public FriendTagLinks update(FriendTagLinks entity) {
-        // Entity -> PO
-        FriendTagLinksPO po = assembler.toPO(entity);
-        // MyBatis-Flex 的 super.updateById(po) 返回 boolean
-        if (super.updateById(po)) {
-            return assembler.toEntity(po);
-        }
-        return null;
-    }
-
-    @Override
-    public FriendTagLinks getById(UUID id) {
-        FriendTagLinksPO po = super.getById(id);
-        // PO -> Entity
-        return assembler.toEntity(po);
-    }
-
-    @Override
-    public List<FriendTagLinks> listAll() {
-        // 查出 PO 列表
-        List<FriendTagLinksPO> poList = super.list();
-        // PO List -> Entity List
+    public List<FriendTagLinks> listByFriendId(UUID friendId) {
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        queryWrapper.where(FriendTagLinksPO::getFriendId).eq(friendId);
+        List<FriendTagLinksPO> poList = super.list(queryWrapper);
         return assembler.toEntityList(poList);
     }
 
-  /**
-   * 分页查询实现
-   */
-  @Override
-  public PageResult<FriendTagLinks> page(FriendTagLinksPageReq pageReq) {
-      // 1. 初始化 MyBatis-Flex 的 Page 对象
-      Page<FriendTagLinksPO> flexPage = Page.of(
-          pageReq.getPageNum(),
-          pageReq.getPageSize()
-      );
-      // 2. 构造查询条件对象 (QueryWrapper)
-      // 此时可根据业务需求，将 pageReq 中的过滤字段映射为数据库查询条件
-      QueryWrapper queryWrapper = QueryWrapper.create();
-
-      // 此处可以根据需求扩展过滤条件，例如：
-      // if (pageReq.getSomeField() != null) {
-      //     queryWrapper.where(TABLE_NAME_PO.SOME_FIELD.eq(pageReq.getSomeField()));
-      // }
-
-      // 3. 执行持久层分页查询
-      Page<FriendTagLinksPO> resultPage = super.page(flexPage, queryWrapper);
-
-      // 4. 数据层级转换 (PO -> Entity)
-      List<FriendTagLinks> entityList = assembler.toEntityList(resultPage.getRecords());
-
-      // 5. 组装并返回通用的 PageResult 对象
-      return PageResult.of(
-          entityList,
-          resultPage.getTotalRow(),
-          resultPage.getTotalPage(),
-          resultPage.getPageNumber(),
-          resultPage.getPageSize()
-      );
-  }
-
-    // ================== 2. 增强逻辑实现 ==================
+    @Override
+    public List<FriendTagLinks> listByTagId(UUID tagId) {
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        queryWrapper.where(FriendTagLinksPO::getTagId).eq(tagId);
+        List<FriendTagLinksPO> poList = super.list(queryWrapper);
+        return assembler.toEntityList(poList);
+    }
 
     @Override
-    public Boolean removeByIds(List<UUID> ids) {
-        // 调用 ServiceImpl 内置的批量按 ID 删除
-        return super.removeByIds(ids);
+    public boolean removeByFriendId(UUID friendId) {
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        queryWrapper.where(FriendTagLinksPO::getFriendId).eq(friendId);
+        return super.remove(queryWrapper);
+    }
+
+    @Override
+    public boolean removeByFriendIdAndTagId(UUID friendId, UUID tagId) {
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        queryWrapper.where(FriendTagLinksPO::getFriendId).eq(friendId);
+        queryWrapper.and(FriendTagLinksPO::getTagId).eq(tagId);
+        return super.remove(queryWrapper);
     }
 
     @Override
     public boolean saveBatch(List<FriendTagLinks> entities) {
-        // Entity List -> PO List
         List<FriendTagLinksPO> pos = assembler.toPOList(entities);
-        // 调用 ServiceImpl 内置的批量保存，默认 1000 条一提交
         return super.saveBatch(pos);
-    }
-
-    @Override
-    public boolean existsById(UUID id) {
-        // 利用 Flex 的 queryChain 快速判断，不涉及对象实例化，性能极佳
-        return queryChain().where(FriendTagLinksPO::getId).eq(id).exists();
-    }
-
-    @Override
-    public List<FriendTagLinks> listByIds(List<UUID> ids) {
-        List<FriendTagLinksPO> poList = super.listByIds(ids);
-        return assembler.toEntityList(poList);
-    }
-
-    @Override
-    public CursorResult<FriendTagLinks> seek(FriendTagLinksCursorReq req) {
-        // 1. 类型安全转换：将 Serializable 游标转为具体的 UUID
-        UUID lastId = null;
-        if (req.getCursor() != null) {
-            lastId = (UUID) req.getCursor();
-        }
-
-        // 2. 执行持久层查询 (多查 1 条用于判断 hasNext)
-        List<FriendTagLinksPO> poList = queryChain()
-                // 使用 gt (大于) 实现游标跳转，主键必须有序
-                .where(FriendTagLinksPO::getId).gt(lastId)
-                .orderBy(FriendTagLinksPO::getId).asc()
-                .limit(req.getLimit() + 1)
-                .list();
-
-        // 3. 判断是否有下一页并截取数据
-        boolean hasNext = poList.size() > req.getLimit();
-        List<FriendTagLinksPO> resultList = hasNext ? poList.subList(0, req.getLimit()) : poList;
-
-        // 4. 计算下一个游标值
-        UUID nextCursor = null;
-        if (!resultList.isEmpty()) {
-            nextCursor = resultList.get(resultList.size() - 1).getId();
-        }
-
-        // 5. 转换并返回
-        return new CursorResult<>(
-            assembler.toEntityList(resultList),
-            nextCursor,
-            hasNext
-        );
     }
 }

@@ -13,7 +13,7 @@ set "BASE_PKG=cn.dreamtof"
 set "JAVA_SRC=src\main\java"
 
 :: 4. 内置模块数组（用空格分隔多个模块名）
-set "BUILTIN_MODULES=song auth playlist labels"
+set "BUILTIN_MODULES=content device media portfolio social system"
 
 ::  环境初始化
 chcp 65001 >nul

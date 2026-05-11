@@ -1,39 +1,21 @@
 package cn.dreamtof.content.infrastructure.persistence.mapper;
 
-import cn.dreamtof.blog.content.infrastructure.persistence.po.TagsPO;
-import cn.dreamtof.blog.content.infrastructure.persistence.po.TagsPOPO;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
-import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import com.mybatisflex.core.BaseMapper;
+import cn.dreamtof.content.infrastructure.persistence.po.TagsPO;
+
 
 /**
- * 标签表 转换器
+ * 标签表 Mapper 数据库访问接口
  * <p>
- * 职责：实现DTO ,VO, Entity 与 PO 之间的无损映射。
+ * 继承 BaseMapper 以获得 MyBatis-Flex 提供的基础 CRUD 能力。
  * </p>
+ *
+ * @author lyl
+ * @since 2026-05-09
  */
-@Mapper(componentModel = "spring")
-public interface TagsPOAssembler {
+@Mapper
+public interface TagsMapper extends BaseMapper<TagsPO> {
 
-    /**
-     * Entity 转 PO (入库)
-     */
-    TagsPOPO toPO(TagsPO entity);
-
-    /**
-     * PO 转 Entity (出库)
-     */
-    TagsPO toEntity(TagsPOPO po);
-
-    /**
-     * 集合转换
-     * PO 转 Entity (出库)
-     */
-    List<TagsPO> toEntityList(List<TagsPOPO> poList);
-
-    /**
-     * 集合转换
-     * Entity 转 PO (入库)
-     */
-    List<TagsPOPO> toPOList(List<TagsPO> entityList);
 }

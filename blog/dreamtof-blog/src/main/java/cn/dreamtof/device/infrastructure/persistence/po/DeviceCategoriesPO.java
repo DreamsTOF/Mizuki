@@ -33,8 +33,8 @@ import java.time.OffsetDateTime;
 /**
  * 设备分类表 实体类
  *
- * @author dream
- * @since 2026-05-08
+ * @author lyl
+ * @since 2026-05-09
  */
 @Data
 @Builder

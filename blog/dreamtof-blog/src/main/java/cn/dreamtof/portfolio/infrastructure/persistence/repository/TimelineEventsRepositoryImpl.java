@@ -1,55 +1,41 @@
 package cn.dreamtof.portfolio.infrastructure.persistence.repository;
 
-
+import cn.dreamtof.core.base.CursorResult;
+import cn.dreamtof.core.base.PageReq;
+import cn.dreamtof.core.base.PageResult;
+import cn.dreamtof.portfolio.application.assembler.TimelineEventsAssembler;
+import cn.dreamtof.portfolio.domain.model.entity.TimelineEvents;
+import cn.dreamtof.portfolio.domain.repository.TimelineEventsRepository;
+import cn.dreamtof.portfolio.infrastructure.persistence.mapper.TimelineEventsMapper;
+import cn.dreamtof.portfolio.infrastructure.persistence.po.TimelineEventsPO;
+import cn.dreamtof.portfolio.infrastructure.persistence.po.table.TimelineEventsTableDef;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
-import cn.dreamtof.blog.portfolio.infrastructure.persistence.po.TimelineEventsPO; // PO 类
-import cn.dreamtof.blog.portfolio.domain.model.entity.TimelineEvents;   // 领域层 Entity
-import cn.dreamtof.blog.portfolio.infrastructure.persistence.mapper.TimelineEventsMapper;
-import cn.dreamtof.blog.portfolio.domain.repository.TimelineEventsRepository;
-import cn.dreamtof.blog.portfolio.application.assembler.TimelineEventsAssembler; // Assembler 移至此处
-import cn.dreamtof.blog.portfolio.api.request.TimelineEventsPageReq;
-import cn.dreamtof.blog.portfolio.api.request.TimelineEventsCursorReq;
-import cn.dreamtof.core.base.CursorResult;
-import org.springframework.stereotype.Repository;
-import com.mybatisflex.core.paginate.Page;
-import cn.dreamtof.core.base.PageResult;
-import com.mybatisflex.core.query.QueryWrapper;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-/**
- * 时间线事件表 仓储实现 (Infrastructure Layer)
- * <p>
- * 职责：实现领域层定义的仓储接口，直接与数据库交互。
- * 采用显式 super 调用，确保直接触发底层框架行为，消除递归隐患。
- * </p>
- *
- * @author dream
- * @since 2026-05-08
- */
 @Repository
 @RequiredArgsConstructor
 @Slf4j
 public class TimelineEventsRepositoryImpl extends ServiceImpl<TimelineEventsMapper, TimelineEventsPO> implements TimelineEventsRepository {
 
-    private final TimelineEventsAssembler assembler; // 注入 MapStruct 转换器
+    private final TimelineEventsAssembler assembler;
+    private static final TimelineEventsTableDef T = TimelineEventsTableDef.TIMELINE_EVENTS_PO;
 
-    // ================== 1. 基础透传操作 (使用 super) ==================
-
-   @Override
-   public TimelineEvents create(TimelineEvents entity) {
-       // Entity -> PO
-       TimelineEventsPO po = assembler.toPO(entity);
-       // MyBatis-Flex 的 super.save(po) 返回 boolean
-       if (super.save(po)) {
-           // 执行成功后，Flex 会自动回填主键 ID 到 po 对象中
-           return assembler.toEntity(po);
-       }
-       return null;
-   }
+    @Override
+    public TimelineEvents create(TimelineEvents entity) {
+        TimelineEventsPO po = assembler.toPO(entity);
+        if (super.save(po)) {
+            return assembler.toEntity(po);
+        }
+        return null;
+    }
 
     @Override
     public boolean removeById(UUID id) {
@@ -58,9 +44,7 @@ public class TimelineEventsRepositoryImpl extends ServiceImpl<TimelineEventsMapp
 
     @Override
     public TimelineEvents update(TimelineEvents entity) {
-        // Entity -> PO
         TimelineEventsPO po = assembler.toPO(entity);
-        // MyBatis-Flex 的 super.updateById(po) 返回 boolean
         if (super.updateById(po)) {
             return assembler.toEntity(po);
         }
@@ -70,73 +54,46 @@ public class TimelineEventsRepositoryImpl extends ServiceImpl<TimelineEventsMapp
     @Override
     public TimelineEvents getById(UUID id) {
         TimelineEventsPO po = super.getById(id);
-        // PO -> Entity
         return assembler.toEntity(po);
     }
 
     @Override
     public List<TimelineEvents> listAll() {
-        // 查出 PO 列表
-        List<TimelineEventsPO> poList = super.list();
-        // PO List -> Entity List
+        QueryWrapper qw = QueryWrapper.create();
+        qw.where(T.DELETED_AT.isNull());
+        qw.orderBy(T.START_DATE.desc());
+        List<TimelineEventsPO> poList = super.list(qw);
         return assembler.toEntityList(poList);
     }
 
-  /**
-   * 分页查询实现
-   */
-  @Override
-  public PageResult<TimelineEvents> page(TimelineEventsPageReq pageReq) {
-      // 1. 初始化 MyBatis-Flex 的 Page 对象
-      Page<TimelineEventsPO> flexPage = Page.of(
-          pageReq.getPageNum(),
-          pageReq.getPageSize()
-      );
-      // 2. 构造查询条件对象 (QueryWrapper)
-      // 此时可根据业务需求，将 pageReq 中的过滤字段映射为数据库查询条件
-      QueryWrapper queryWrapper = QueryWrapper.create();
-
-      // 此处可以根据需求扩展过滤条件，例如：
-      // if (pageReq.getSomeField() != null) {
-      //     queryWrapper.where(TABLE_NAME_PO.SOME_FIELD.eq(pageReq.getSomeField()));
-      // }
-
-      // 3. 执行持久层分页查询
-      Page<TimelineEventsPO> resultPage = super.page(flexPage, queryWrapper);
-
-      // 4. 数据层级转换 (PO -> Entity)
-      List<TimelineEvents> entityList = assembler.toEntityList(resultPage.getRecords());
-
-      // 5. 组装并返回通用的 PageResult 对象
-      return PageResult.of(
-          entityList,
-          resultPage.getTotalRow(),
-          resultPage.getTotalPage(),
-          resultPage.getPageNumber(),
-          resultPage.getPageSize()
-      );
-  }
-
-    // ================== 2. 增强逻辑实现 ==================
+    @Override
+    public PageResult<TimelineEvents> page(PageReq pageReq) {
+        Page<TimelineEventsPO> flexPage = Page.of(pageReq.getPageNum(), pageReq.getPageSize());
+        QueryWrapper qw = QueryWrapper.create();
+        qw.where(T.DELETED_AT.isNull());
+        qw.orderBy(T.START_DATE.desc());
+        Page<TimelineEventsPO> resultPage = super.page(flexPage, qw);
+        List<TimelineEvents> entityList = assembler.toEntityList(resultPage.getRecords());
+        return PageResult.of(entityList, resultPage.getTotalRow(), resultPage.getTotalPage(),
+                resultPage.getPageNumber(), resultPage.getPageSize());
+    }
 
     @Override
     public Boolean removeByIds(List<UUID> ids) {
-        // 调用 ServiceImpl 内置的批量按 ID 删除
         return super.removeByIds(ids);
     }
 
     @Override
     public boolean saveBatch(List<TimelineEvents> entities) {
-        // Entity List -> PO List
         List<TimelineEventsPO> pos = assembler.toPOList(entities);
-        // 调用 ServiceImpl 内置的批量保存，默认 1000 条一提交
         return super.saveBatch(pos);
     }
 
     @Override
     public boolean existsById(UUID id) {
-        // 利用 Flex 的 queryChain 快速判断，不涉及对象实例化，性能极佳
-        return queryChain().where(TimelineEventsPO::getId).eq(id).exists();
+        QueryWrapper qw = QueryWrapper.create();
+        qw.where(T.ID.eq(id));
+        return super.count(qw) > 0;
     }
 
     @Override
@@ -146,36 +103,47 @@ public class TimelineEventsRepositoryImpl extends ServiceImpl<TimelineEventsMapp
     }
 
     @Override
-    public CursorResult<TimelineEvents> seek(TimelineEventsCursorReq req) {
-        // 1. 类型安全转换：将 Serializable 游标转为具体的 UUID
-        UUID lastId = null;
-        if (req.getCursor() != null) {
-            lastId = (UUID) req.getCursor();
+    public CursorResult<TimelineEvents> seek(UUID cursor, int limit) {
+        QueryWrapper qw = QueryWrapper.create();
+        if (cursor != null) {
+            qw.where(T.ID.gt(cursor));
         }
-
-        // 2. 执行持久层查询 (多查 1 条用于判断 hasNext)
-        List<TimelineEventsPO> poList = queryChain()
-                // 使用 gt (大于) 实现游标跳转，主键必须有序
-                .where(TimelineEventsPO::getId).gt(lastId)
-                .orderBy(TimelineEventsPO::getId).asc()
-                .limit(req.getLimit() + 1)
-                .list();
-
-        // 3. 判断是否有下一页并截取数据
-        boolean hasNext = poList.size() > req.getLimit();
-        List<TimelineEventsPO> resultList = hasNext ? poList.subList(0, req.getLimit()) : poList;
-
-        // 4. 计算下一个游标值
+        qw.where(T.DELETED_AT.isNull());
+        qw.orderBy(T.ID.asc());
+        qw.limit(limit + 1);
+        List<TimelineEventsPO> poList = super.list(qw);
+        boolean hasNext = poList.size() > limit;
+        List<TimelineEventsPO> resultList = hasNext ? poList.subList(0, limit) : poList;
         UUID nextCursor = null;
         if (!resultList.isEmpty()) {
             nextCursor = resultList.get(resultList.size() - 1).getId();
         }
+        return new CursorResult<>(assembler.toEntityList(resultList), nextCursor, hasNext);
+    }
 
-        // 5. 转换并返回
-        return new CursorResult<>(
-            assembler.toEntityList(resultList),
-            nextCursor,
-            hasNext
-        );
+    @Override
+    public List<TimelineEvents> listByEventType(String eventType) {
+        QueryWrapper qw = QueryWrapper.create();
+        qw.where(T.TYPE.eq(eventType));
+        qw.where(T.DELETED_AT.isNull());
+        qw.orderBy(T.START_DATE.desc());
+        List<TimelineEventsPO> poList = super.list(qw);
+        return assembler.toEntityList(poList);
+    }
+
+    @Override
+    public List<String> listEventTypes() {
+        QueryWrapper qw = QueryWrapper.create();
+        qw.where(T.DELETED_AT.isNull());
+        qw.select(T.TYPE);
+        qw.groupBy(T.TYPE);
+        List<TimelineEventsPO> poList = super.list(qw);
+        List<String> types = new ArrayList<>(poList.size());
+        for (TimelineEventsPO po : poList) {
+            if (po.getType() != null) {
+                types.add(po.getType());
+            }
+        }
+        return types;
     }
 }

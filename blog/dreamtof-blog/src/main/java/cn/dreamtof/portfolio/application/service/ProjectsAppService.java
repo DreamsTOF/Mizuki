@@ -1,116 +1,145 @@
 package cn.dreamtof.portfolio.application.service;
 
-
-import com.mybatisflex.core.paginate.Page;
+import cn.dreamtof.core.base.PageReq;
 import cn.dreamtof.core.base.PageResult;
-import cn.dreamtof.blog.portfolio.domain.model.entity.Projects;   // 领域层 Entity
-import cn.dreamtof.blog.portfolio.api.request.ProjectsPageReq;
-import cn.dreamtof.blog.portfolio.api.request.ProjectsCursorReq;
-import cn.dreamtof.core.base.CursorResult;
-import java.util.List;
+import cn.dreamtof.core.utils.DateUtils;
+import cn.dreamtof.portfolio.api.vo.ProjectVO;
+import cn.dreamtof.portfolio.application.assembler.ProjectsAssembler;
+import cn.dreamtof.portfolio.domain.model.entity.Projects;
+import cn.dreamtof.portfolio.domain.service.ProjectDomainService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
-/**
- * 项目表 仓储接口 (Domain Layer)
- * <p>
- * 职责：定义领域层所需的持久化契约。
- * 屏蔽底层框架 (MyBatis-Flex) 细节，仅操作领域实体。
- * </p>
- *
- * @author dream
- * @since 
- */
-public interface ProjectsAppService {
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class ProjectsAppService {
 
-    // ================== 1. 基础具名操作 ==================
+    private final ProjectDomainService projectDomainService;
+    private final ProjectsAssembler assembler;
+    private final TransactionTemplate transactionTemplate;
 
-    /**
-     * 保存实体
-     *
-     * @param entity 领域对象
-     * @return 包含 ID 的领域对象
-     */
-    Projects create(Projects entity);
+    public ProjectVO createProject(String title, String description, String image,
+                                   String category, String status, String liveDemo,
+                                   String sourceCode, String visitUrl,
+                                   OffsetDateTime startDate, OffsetDateTime endDate,
+                                   Boolean featured, Boolean showImage, Integer sortOrder,
+                                   List<String> techStacks, List<String> tags) {
+        Projects entity = Projects.create(title, description, image, category, status,
+                liveDemo, sourceCode, visitUrl, startDate, endDate,
+                featured, showImage, sortOrder);
+        Projects created = projectDomainService.createProject(entity);
+        if (techStacks != null && !techStacks.isEmpty()) {
+            projectDomainService.syncTechStacks(created.getId(), techStacks);
+        }
+        if (tags != null && !tags.isEmpty()) {
+            projectDomainService.syncTags(created.getId(), tags);
+        }
+        ProjectVO vo = toVO(created);
+        vo.setTechStack(techStacks != null ? techStacks : List.of());
+        vo.setTags(tags != null ? tags : List.of());
+        log.info("项目创建完成, projectId={}, title={}", created.getId(), title);
+        return vo;
+    }
 
-    /**
-     * 根据 ID 删除
-     *
-     * @param id 主键
-     * @return true 成功
-     */
-    boolean removeById(UUID id);
+    public ProjectVO updateProject(UUID id, String title, String description, String image,
+                                   String category, String status, String liveDemo,
+                                   String sourceCode, String visitUrl,
+                                   OffsetDateTime startDate, OffsetDateTime endDate,
+                                   Boolean showImage, Integer sortOrder,
+                                   List<String> techStacks, List<String> tags) {
+        Projects existing = projectDomainService.getById(id);
+        existing.update(title, description, image, category, status, liveDemo,
+                sourceCode, visitUrl, startDate, endDate, showImage, sortOrder);
+        Projects updated = projectDomainService.updateProject(existing);
+        if (techStacks != null) {
+            projectDomainService.syncTechStacks(updated.getId(), techStacks);
+        }
+        if (tags != null) {
+            projectDomainService.syncTags(updated.getId(), tags);
+        }
+        ProjectVO vo = toVO(updated);
+        vo.setTechStack(projectDomainService.getTechStackNames(updated.getId()));
+        vo.setTags(projectDomainService.getTagNames(updated.getId()));
+        log.info("项目更新完成, projectId={}", id);
+        return vo;
+    }
 
-    /**
-     * 根据 ID 更新
-     *
-     * @param entity 包含 ID 的领域对象
-     * @return 更新后的领域对象
-     */
-    Projects update(Projects entity);
+    public boolean deleteProject(UUID id) {
+        return transactionTemplate.execute(status -> projectDomainService.deleteProject(id));
+    }
 
-    /**
-     * 根据 ID 获取详情
-     *
-     * @param id 主键
-     * @return 领域对象
-     */
-    Projects getById(UUID id);
+    public ProjectVO toggleFeatured(UUID id, boolean featured) {
+        Projects updated = projectDomainService.toggleFeatured(id, featured);
+        ProjectVO vo = toVO(updated);
+        vo.setTechStack(projectDomainService.getTechStackNames(updated.getId()));
+        vo.setTags(projectDomainService.getTagNames(updated.getId()));
+        return vo;
+    }
 
-    /**
-     * 获取全量列表
-     *
-     * @return 领域实体集合
-     */
-    List<Projects> listAll();
+    public ProjectVO getDetail(UUID id) {
+        Projects entity = projectDomainService.getById(id);
+        ProjectVO vo = toVO(entity);
+        vo.setTechStack(projectDomainService.getTechStackNames(id));
+        vo.setTags(projectDomainService.getTagNames(id));
+        return vo;
+    }
 
-    /**
-     * 分页查询 (增强版)
-     *
-     * @param pageReq 分页请求参数
-     * @return 领域实体分页结果
-     */
-    PageResult<Projects> page(ProjectsPageReq pageReq);
+    public List<ProjectVO> listAll() {
+        List<Projects> entities = projectDomainService.listAll();
+        return toVOList(entities);
+    }
 
-    // ================== 2. 增强扩展操作 ==================
+    public List<ProjectVO> listByCategory(String category) {
+        List<Projects> entities = projectDomainService.listByCategory(category);
+        return toVOList(entities);
+    }
 
-    /**
-     * 批量删除
-     *
-     * @param ids ID 集合
-     * @return true 执行成功
-     */
-    Boolean removeByIds(List<UUID> ids);
+    public List<String> listCategories() {
+        return projectDomainService.listCategories();
+    }
 
-    /**
-     * 批量保存
-     *
-     * @param entities 领域实体集合
-     * @return true 全部成功
-     */
-    boolean saveBatch(List<Projects> entities);
+    public PageResult<ProjectVO> pageProjects(PageReq pageReq) {
+        PageResult<Projects> pageResult = projectDomainService.page(pageReq);
+        List<ProjectVO> voList = toVOList(pageResult.getRecords());
+        return PageResult.of(voList, pageResult.getTotal(), pageResult.getPages(),
+                pageResult.getPageNum(), pageResult.getPageSize());
+    }
 
-    /**
-     * 检查是否存在
-     *
-     * @param id 主键
-     * @return true 存在
-     */
-    boolean existsById(UUID id);
+    // ==========================================
+    // 手动 VO 转换（字段名与 Entity 不一致，无法依赖 MapStruct 自动映射）
+    // ==========================================
 
-    /**
-     * 根据 ID 集合批量获取
-     *
-     * @param ids ID 集合
-     * @return 领域实体列表
-     */
-    List<Projects> listByIds(List<UUID> ids);
+    private ProjectVO toVO(Projects entity) {
+        ProjectVO vo = new ProjectVO();
+        vo.setId(entity.getId());
+        vo.setTitle(entity.getTitle());
+        vo.setDescription(entity.getDescription());
+        vo.setImage(entity.getImage());
+        vo.setCategory(entity.getCategory());
+        vo.setStatus(entity.getStatus());
+        vo.setLiveDemo(entity.getLiveDemo());
+        vo.setSourceCode(entity.getSourceCode());
+        vo.setVisitUrl(entity.getVisitUrl());
+        vo.setStartDate(entity.getStartDate() != null
+                ? DateUtils.format(entity.getStartDate().toLocalDateTime()) : null);
+        vo.setEndDate(entity.getEndDate() != null
+                ? DateUtils.format(entity.getEndDate().toLocalDateTime()) : null);
+        vo.setFeatured(entity.getFeatured());
+        vo.setShowImage(entity.getShowImage());
+        vo.setSortOrder(entity.getSortOrder());
+        vo.setCreatedAt(entity.getCreatedAt());
+        vo.setUpdatedAt(entity.getUpdatedAt());
+        return vo;
+    }
 
-    /**
-     * 游标查询 (Seek Method / 瀑布流)
-     *
-     * @param req 游标查询请求
-     * @return 分页结果包装类
-     */
-    CursorResult<Projects> seek(ProjectsCursorReq req);
+    private List<ProjectVO> toVOList(List<Projects> entities) {
+        return entities.stream().map(this::toVO).toList();
+    }
 }

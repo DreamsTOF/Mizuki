@@ -8,8 +8,8 @@ import java.io.Serial;
 /**
  * 每日统计汇总表 表定义层。
  *
- * @author dream
- * @since 2026-05-08
+ * @author lyl
+ * @since 2026-05-09
  */
 public class DailyStatsTableDef extends TableDef {
 

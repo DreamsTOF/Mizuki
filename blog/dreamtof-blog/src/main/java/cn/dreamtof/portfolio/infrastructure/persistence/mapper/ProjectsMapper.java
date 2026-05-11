@@ -1,39 +1,21 @@
 package cn.dreamtof.portfolio.infrastructure.persistence.mapper;
 
-import cn.dreamtof.blog.portfolio.infrastructure.persistence.po.ProjectsPO;
-import cn.dreamtof.blog.portfolio.infrastructure.persistence.po.ProjectsPOPO;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
-import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import com.mybatisflex.core.BaseMapper;
+import cn.dreamtof.portfolio.infrastructure.persistence.po.ProjectsPO;
+
 
 /**
- * 项目表 转换器
+ * 项目表 Mapper 数据库访问接口
  * <p>
- * 职责：实现DTO ,VO, Entity 与 PO 之间的无损映射。
+ * 继承 BaseMapper 以获得 MyBatis-Flex 提供的基础 CRUD 能力。
  * </p>
+ *
+ * @author lyl
+ * @since 2026-05-09
  */
-@Mapper(componentModel = "spring")
-public interface ProjectsPOAssembler {
+@Mapper
+public interface ProjectsMapper extends BaseMapper<ProjectsPO> {
 
-    /**
-     * Entity 转 PO (入库)
-     */
-    ProjectsPOPO toPO(ProjectsPO entity);
-
-    /**
-     * PO 转 Entity (出库)
-     */
-    ProjectsPO toEntity(ProjectsPOPO po);
-
-    /**
-     * 集合转换
-     * PO 转 Entity (出库)
-     */
-    List<ProjectsPO> toEntityList(List<ProjectsPOPO> poList);
-
-    /**
-     * 集合转换
-     * Entity 转 PO (入库)
-     */
-    List<ProjectsPOPO> toPOList(List<ProjectsPO> entityList);
 }

@@ -1,101 +1,77 @@
 package cn.dreamtof.system.domain.model.entity;
 
-import cn.dreamtof.core.base.CreateTimeAudit;
-import cn.dreamtof.core.base.UpdateTimeAudit;
-import cn.dreamtof.core.base.VersionAudit;
-
-import java.util.UUID;
-import java.io.Serializable;
-import java.io.Serial;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.math.BigDecimal;
+import cn.dreamtof.core.exception.Asserts;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.extern.slf4j.Slf4j;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.*;
-import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
-
-
-/**
- * 主题设置表 领域实体
- * <p>
- * 职责：核心业务逻辑、领域行为校验、审计数据持有。
- * </p>
- *
- * @author dream
- * @since 
- */
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Slf4j
-@Schema(name="ThemeSettings", description = "主题设置表 领域实体")
-public class ThemeSettings implements Serializable, IdAudit{
+@Schema(name = "ThemeSettings", description = "主题设置表 领域实体")
+public class ThemeSettings implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /**
-     * ID
-     */
-     @Schema(description = "ID")
-     private UUID id;
-    /**
-     * 设置项键名
-     */
-     @Schema(description = "设置项键名")
-     private String settingKey;
-    /**
-     * 设置项值
-     */
-     @Schema(description = "设置项值")
-     private String settingValue;
-    /**
-     * 设置项说明
-     */
-     @Schema(description = "设置项说明")
-     private String description;
-    /**
-     * 是否允许用户自定义
-     */
-     @Schema(description = "是否允许用户自定义")
-     private Boolean hasUserCustomizable;
-    /**
-     * 乐观锁版本号
-     */
-     @Schema(description = "乐观锁版本号")
-     private Integer version;
-    /**
-     * 创建时间
-     */
-     @Schema(description = "创建时间")
-     private OffsetDateTime createdAt;
-    /**
-     * 最后更新时间
-     */
-     @Schema(description = "最后更新时间")
-     private OffsetDateTime updatedAt;
+    @Schema(description = "ID")
+    private UUID id;
+    @Schema(description = "设置键")
+    private String settingKey;
+    @Schema(description = "设置值")
+    private String settingValue;
+    @Schema(description = "设置描述")
+    private String description;
+    @Schema(description = "是否允许用户自定义")
+    private Boolean hasUserCustomizable;
+    @Schema(description = "乐观锁版本号")
+    private Integer version;
+    @Schema(description = "创建时间")
+    private OffsetDateTime createdAt;
+    @Schema(description = "最后更新时间")
+    private OffsetDateTime updatedAt;
 
     // ==========================================
-    // 🚀 领域行为 (Domain Logic)
+    // 静态工厂方法
     // ==========================================
 
-    /**
-     * 初始化业务逻辑
-     */
-    public void init() {
-        // 在此处编写创建时的默认值或初始校验逻辑
+    public static ThemeSettings create(String settingKey, String settingValue,
+                                       String description, Boolean hasUserCustomizable) {
+        Asserts.notBlank(settingKey, "设置键不能为空");
+        ThemeSettings entity = new ThemeSettings();
+        entity.settingKey = settingKey;
+        entity.settingValue = settingValue;
+        entity.description = description;
+        entity.hasUserCustomizable = hasUserCustomizable != null ? hasUserCustomizable : false;
+        return entity;
     }
 
-    /**
-     * 业务校验：示例（如权限判断）
-     */
-    public boolean canBeManagedBy(Object userId) {
-        // 利用实体已有的审计字段进行逻辑判断
-        return true;
+    // ==========================================
+    // 领域行为
+    // ==========================================
+
+    public void update(String settingValue, String description, Boolean hasUserCustomizable) {
+        if (settingValue != null) {
+            this.settingValue = settingValue;
+        }
+        if (description != null) {
+            this.description = description;
+        }
+        if (hasUserCustomizable != null) {
+            this.hasUserCustomizable = hasUserCustomizable;
+        }
+    }
+
+    public void updateValue(String settingValue) {
+        Asserts.notBlank(settingValue, "设置值不能为空");
+        this.settingValue = settingValue;
     }
 }
